@@ -5,6 +5,37 @@ import vert from "./vert.glsl";
 // @ts-ignore
 import frag from "./frag.glsl";
 import REGL from "regl";
+import uhModel from "./uh.json"
+
+
+type Model = {
+  verts: number[][];
+  elements: number[][];
+}
+
+function preprocessModel(m: Model) {
+  // Explode indexing
+  const PositionSingle: number[][] = m.elements.flatMap(([a, b]) => [m.verts[a], m.verts[b]]);
+  // Duplicate vertices
+  const Position: number[][] = PositionSingle.flatMap(vert => [vert, vert]);
+
+  // Generate sister elements and sides
+  const SisterPosition: number[][] = [];
+  const Side: number[] = [];
+  const Elements: number[] = [];
+  for (let i=0; i<Position.length; i+=4) {
+    SisterPosition.push(Position[i+2], Position[i+2], Position[i], Position[i]);
+    Side.push(1, -1, 1, -1);
+    Elements.push(i, i+1, i+2, i, i+2, i+3);
+  }
+  return {
+    Position: regl.buffer(Position),
+    SisterPosition: regl.buffer(SisterPosition),
+    Side: regl.buffer(Side),
+    Elements: regl.elements(Elements),
+  }
+}
+const uhPreprocessed = preprocessModel(uhModel);
 
 type Uniforms = {
   Time: number;
@@ -19,37 +50,21 @@ type Props = {
 
 let startTime: number = JSON.parse(sessionStorage.getItem("startTime") || "0")
 
-const x1 = -0.6, y1 = -0.6, z1=0, x2=0.2, y2=0.5, z2=0;
-
 const drawMeshLine = regl<Uniforms, {}, Props>({
   vert,
   frag,
   primitive: "triangles",
   attributes: {
-    Position: regl.buffer([
-      [x1, y1, z1],
-      [x1, y1, z1],
-      [x2, y2, z2],
-      [x2, y2, z2],
-    ]),
-    SisterPosition: regl.buffer([
-      [x2, y2, z2],
-      [x2, y2, z2],
-      [x1, y1, z1],
-      [x1, y1, z1],
-    ]),
-    Side: regl.buffer([
-      1, -1, 1, -1
-    ])
+    Position: uhPreprocessed.Position,
+    SisterPosition: uhPreprocessed.SisterPosition,
+    Side: uhPreprocessed.Side,
   },
-  elements: regl.elements([
-    0, 1, 2, 0, 2, 3
-  ]),
+  elements: uhPreprocessed.Elements,
   uniforms: {
     Time: ({ time }) => time+startTime,
     Aspect: (context) => context.viewportWidth / context.viewportHeight,
     Translation: [0, 0],
-    Thickness: 0.03,
+    Thickness: 0.01,
   }
 })
 
