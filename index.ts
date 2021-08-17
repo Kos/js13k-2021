@@ -7,7 +7,7 @@ import frag from "./frag.glsl";
 import REGL from "regl";
 
 type Uniforms = {
-  Tick: number;
+  Time: number;
   Aspect: number;
   Translation: REGL.Vec2;
 };
@@ -15,6 +15,8 @@ type Uniforms = {
 type Props = {
   translation: REGL.Vec2;
 };
+
+let startTime: number = JSON.parse(sessionStorage.getItem("startTime") || "0")
 
 const drawTriangle = regl<Uniforms, {}, Props>({
   vert,
@@ -30,13 +32,20 @@ const drawTriangle = regl<Uniforms, {}, Props>({
   },
   elements: regl.elements([0, 1, 2, 2, 1, 3]),
   uniforms: {
-    Tick: ({ tick }) => tick,
+    Time: ({ time }) => time+startTime,
     Aspect: (context) => context.viewportWidth / context.viewportHeight,
     Translation: (_context, props) => props.translation,
   },
 });
 
-regl.frame(() => {
+let currentTime = 0;
+
+window.onbeforeunload = () => {
+  sessionStorage.setItem("startTime", JSON.stringify(startTime+currentTime))
+}
+
+regl.frame((context) => {
+  currentTime = context.time;
   regl.clear({
     color: [0, 0, 0, 1],
   });

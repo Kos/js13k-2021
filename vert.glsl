@@ -1,5 +1,5 @@
 attribute vec2 Position;
-uniform float Tick;
+uniform float Time;
 uniform float Aspect;
 uniform vec2 Translation;
 
@@ -12,7 +12,7 @@ vec2 rotate(vec2 v, float a) {
 
 void main() {
     vec2 pos = Position;
-    pos = rotate(pos, Tick*0.1);
+    pos = rotate(pos, Time);
     pos *= 0.1;
     pos += Translation;
     pos *= vec2(1, Aspect);
