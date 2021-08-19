@@ -1,11 +1,14 @@
 attribute vec3 Position;
-attribute vec3 SisterPosition;
+attribute vec3 Normal;
 attribute float Side;
 
 uniform float Time;
 uniform float Aspect;
 uniform vec2 Translation;
 uniform float Thickness;
+uniform float Scale;
+
+varying lowp float Bar;
 
 vec2 rotate(vec2 v, float a) {
 	float s = sin(a);
@@ -32,38 +35,38 @@ vec3 rotate(vec3 v, vec3 axis, float angle) {
 }
 
 void main() {
-    float scale = 0.0005;
+    float depthMultiplier = 6.0;
 
     // Rotate and scale the model
     vec3 pos = Position;
-    vec3 sis = SisterPosition;
+    vec3 norm = Normal;
 
-    pos *= scale;
-    sis *= scale;
+    pos *= Scale;
 
     vec3 rotationAxis = vec3(1.0, 1.0, 0.2);
     pos = rotate(pos, rotationAxis, Time);
-    sis = rotate(sis, rotationAxis, Time);
-    // pos.xy = rotate(pos.xy, Time);
-    // sis.xy = rotate(sis.xy, Time);
-
+    norm = rotate(norm, rotationAxis, Time);
 
     // Downcast model to 2D
     vec2 pos2d = pos.xy;
-    vec2 sis2d = sis.xy;
+    vec2 norm2d = norm.xy;
+    vec2 binormal = normalize(vec2(norm2d.y, -norm2d.x));
+
+    // Faux perspective
+    float pseudoDepth = (pos.z*depthMultiplier + 1.0) * 0.5;
+    float depthScaleFactor = pow(2.0, pseudoDepth) *0.5;
+    pos2d *= depthScaleFactor; // This effect is somewhat fishy
 
     // Extrude the line
-    vec2 lineForward = normalize(sis2d - pos2d);
-    vec2 lineNormal = vec2(lineForward.y, -lineForward.x);
-    pos2d = pos2d + lineNormal * Thickness * Side * (pos.z+1.0);
+    pos2d = pos2d + binormal * Side * Thickness * depthScaleFactor;
 
-
-    // Move to world place
+    // Move to world coordinates
     pos2d += Translation;
 
     // Scale everything to match screen aspect ratio
     pos2d *= vec2(1, Aspect);
 
     // Output   
-    gl_Position = vec4(pos2d, 0, 1);
+    gl_Position = vec4(pos2d, -pos.z, 1);
+    Bar = Side;
 }

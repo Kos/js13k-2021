@@ -1,3 +1,4 @@
+import sys
 import fileinput
 import json
 
@@ -34,6 +35,14 @@ def main():
                 elements.append([int(d) - 1, int(a) - 1])
             else:
                 raise ValueError("Unsupported list of verts in face", line)
+
+    max_dimension = max(coord for vert in verts for coord in vert)
+    print("max_dimension", max_dimension, file=sys.stderr)
+
+    if max_dimension:
+        for vert in verts:
+            for i in range(len(vert)):
+                vert[i] /= max_dimension
 
     print(
         json.dumps(
