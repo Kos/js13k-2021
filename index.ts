@@ -86,9 +86,10 @@ const makeMeshDrawCall = (model: ProcessedModel) =>
 const drawCube = makeMeshDrawCall(models.cube);
 const drawAsteroid = makeMeshDrawCall(models.asteroid);
 
-const state = JSON.parse(sessionStorage.getItem("state") || '"null"') || {
+const state = {
   rotation: 0,
   rotating: true,
+  ...JSON.parse(sessionStorage.getItem("state") || '"{}"'),
 };
 
 window.onbeforeunload = () => {
