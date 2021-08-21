@@ -15,8 +15,5 @@ void main() {
     r3 = 1.0-r3;
 
     vec3 color = VColor;
-
-
-
     gl_FragColor = vec4(color, 1);
 }
