@@ -2,16 +2,16 @@ import { Vec2 } from "regl";
 import { drawAsteroid, drawCube } from "./models";
 import regl from "./regl";
 import { state, step } from "./state";
+import { particles } from "./particles";
 
 let prevTime = null;
 
 regl.frame((context) => {
-  const dt = context.time - (prevTime || null);
+  const dt = context.time - (prevTime || context.time);
   prevTime = context.time;
 
   step(dt);
-
-  state.rotation += dt;
+  particles.map((system) => system.update(dt));
 
   regl.clear({
     color: [0, 0, 0, 1],
@@ -42,4 +42,8 @@ regl.frame((context) => {
       thickness: 0.2,
     })
   );
+
+  particles.forEach((p) => {
+    p.render();
+  });
 });

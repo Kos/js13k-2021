@@ -53,6 +53,8 @@ if (state.asteroids.length === 0) {
 }
 
 function step(dt) {
+  state.rotation += dt;
+
   state.asteroids.forEach((a) => {
     a.pos[0] += a.vec[0] * dt;
     a.pos[1] += a.vec[1] * dt;
