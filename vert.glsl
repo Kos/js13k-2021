@@ -1,14 +1,18 @@
+precision mediump float;
+
 attribute vec3 Position;
 attribute vec3 Normal;
 attribute float Side;
 
-uniform float Time;
-uniform float Aspect;
 uniform vec2 Translation;
+uniform float Rotation;
 uniform float Thickness;
 uniform float Scale;
+uniform float Aspect;
+uniform vec3 Color;
 
-varying lowp float Bar;
+varying float VBar;
+varying vec3 VColor;
 
 vec2 rotate(vec2 v, float a) {
 	float s = sin(a);
@@ -44,8 +48,8 @@ void main() {
     pos *= Scale;
 
     vec3 rotationAxis = vec3(1.0, 1.0, 0.2);
-    pos = rotate(pos, rotationAxis, Time);
-    norm = rotate(norm, rotationAxis, Time);
+    pos = rotate(pos, rotationAxis, Rotation);
+    norm = rotate(norm, rotationAxis, Rotation);
 
     // Downcast model to 2D
     vec2 pos2d = pos.xy;
@@ -60,13 +64,14 @@ void main() {
     // Extrude the line
     pos2d = pos2d + binormal * Side * Thickness * depthScaleFactor;
 
-    // Move to world coordinates
-    pos2d += Translation;
-
     // Scale everything to match screen aspect ratio
     pos2d *= vec2(1, Aspect);
 
+    // Move to right place
+    pos2d += Translation * vec2(1./16.0, 1./9.);
+
     // Output   
     gl_Position = vec4(pos2d, -pos.z, 1);
-    Bar = Side;
+    VBar = Side;
+    VColor = Color;
 }
