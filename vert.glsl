@@ -6,6 +6,8 @@ attribute float Side;
 
 uniform vec2 Translation;
 uniform float Rotation;
+uniform float RotationY;
+uniform float RotationZ;
 uniform float Thickness;
 uniform float Scale;
 uniform float Aspect;
@@ -51,6 +53,14 @@ void main() {
     pos = rotate(pos, rotationAxis, Rotation);
     norm = rotate(norm, rotationAxis, Rotation);
 
+    mat3 RY = mat3(
+        cos(RotationY),    0,    -sin(RotationY),
+        0,                 1,    0,
+        sin(RotationY),    0,    cos(RotationY)
+    );
+    pos = RY*pos;
+    norm = RY*norm;
+
     // Downcast model to 2D
     vec2 pos2d = pos.xy;
     vec2 norm2d = norm.xy;
@@ -63,6 +73,11 @@ void main() {
 
     // Extrude the line
     pos2d = pos2d + binormal * Side * Thickness * depthScaleFactor;
+
+    
+    // Rotate again (not entirely clear why I didn't do that in model space)
+    mat2 RZ = mat2(cos(RotationZ), -sin(RotationZ), sin(RotationZ), cos(RotationZ));
+    pos2d = RZ * pos2d;
 
     // Scale everything to match screen aspect ratio
     pos2d *= vec2(1, Aspect);

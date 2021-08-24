@@ -117,7 +117,9 @@ function makeExplosion(): TParticleEffect {
     },
     elements: buffers.elements,
     uniforms: {
-      Rotation: (context, props) => props.rotation || 0,
+      Rotation: 0,
+      RotationY: 0,
+      RotationZ: 0,
       Aspect: (context) => context.viewportWidth / context.viewportHeight,
       Translation: (context, props) => props.translation || [0, 0],
       Thickness: (context, props) => props.thickness * 0.1 || 0.01,

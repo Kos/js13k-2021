@@ -1,8 +1,10 @@
 import { Vec2 } from "regl";
-import { drawAsteroid, drawCube } from "./models";
+import { drawAsteroid, drawCube, drawLeship } from "./models";
 import regl from "./regl";
 import { state, step } from "./state";
 import { particles } from "./particles";
+import { getConfigFileParsingDiagnostics } from "typescript";
+import fps from "./fps";
 
 let prevTime = null;
 
@@ -26,6 +28,15 @@ regl.frame((context) => {
       color: a.color,
     })
   );
+
+  drawLeship({
+    translation: state.ship.pos,
+    rotationY: state.ship.thrust,
+    rotationZ: state.ship.angle,
+    scale: 0.1,
+    thickness: 0.2,
+    color: [0.2, 0.2, 1],
+  });
 
   const cubes: Vec2[] = [
     [-16, -9],

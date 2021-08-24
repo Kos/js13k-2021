@@ -42,6 +42,12 @@ function preprocessModel(m: Model) {
 
 type ProcessedModel = ReturnType<typeof preprocessModel>;
 
+// Fix orientation that I messed up earlier
+leshipModel.verts.forEach((vert) => {
+  [vert[2], vert[1]] = [vert[1], -vert[2]];
+  vert[1] -= 0.5;
+});
+
 const models = {
   cube: preprocessModel(cubeModel),
   asteroid: preprocessModel(asteroidModel),
@@ -51,6 +57,8 @@ const models = {
 type Uniforms = {
   Translation: REGL.Vec2;
   Rotation: number;
+  RotationY: number;
+  RotationZ: number;
   Thickness: number;
   Scale: number;
   Aspect: number;
@@ -60,6 +68,8 @@ type Uniforms = {
 type Props = {
   translation: REGL.Vec2;
   rotation: number;
+  rotationY: number;
+  rotationZ: number;
   thickness: number;
   scale: number;
   color: REGL.Vec3;
@@ -78,6 +88,8 @@ const makeMeshDrawCall = (model: ProcessedModel) =>
     elements: model.Elements,
     uniforms: {
       Rotation: (context, props) => props.rotation || 0,
+      RotationY: (context, props) => props.rotationY || 0,
+      RotationZ: (context, props) => props.rotationZ || 0,
       Aspect: (context) => context.viewportWidth / context.viewportHeight,
       Translation: (context, props) => props.translation,
       Thickness: (context, props) => props.thickness * 0.01 || 0.01,
