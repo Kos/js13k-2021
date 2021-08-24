@@ -5,8 +5,7 @@ import regl, { vert, frag } from "./regl";
 const { cos, sin } = Math;
 type TParticleEffect = {
   settings: TParticleSettings;
-
-  emit: () => void;
+  emit: (state: TParticleState) => void;
   update: (dt: number) => void;
   render: () => void;
 };
@@ -59,26 +58,25 @@ type TParticleState = {
   sin: number;
 };
 
-function makeExplosion(): TParticleEffect {
-  /* Generate geometry for the shader */
-
+function makeEffect(particleCount: number): TParticleEffect {
   // unlike models, geometry for particles need to be dynamic since we're going to draw whole system in one go ...
 
-  const particleCount = 15; // allocation
-  const len = 0.06; // square particle
+  // Init state
   const particles: TParticleState[] = Array(particleCount)
     .fill(0)
     .map((_, n) => ({
-      pos: [n / 10, (n % 4) / 10, 0],
-      vec: [0.1, 0, 0],
+      // TODO can be 2d
+      pos: [0, 0, 0],
+      vec: [0, 0, 0],
       angle: 0,
       cos: 1,
       sin: 0,
-      angular: (Math.random() - 0.5) * 10,
+      angular: 0,
     }));
   const vertexCount = particleCount * 4; // one quad (two triangles) per particle
   const vertexSizeInBytes = 3 * 4; // 3 floats 4 byte each
 
+  // Allocate buffers
   const buffers = {
     position: regl.buffer({
       type: "float",
@@ -131,10 +129,16 @@ function makeExplosion(): TParticleEffect {
     },
   });
 
+  let nextIndex = 0;
+
   return {
     settings: {},
 
-    emit() {},
+    emit(particle: TParticleState) {
+      let index = nextIndex++;
+      nextIndex %= particleCount;
+      particles[index] = particle;
+    },
 
     update(dt: number) {
       particles.forEach((p) => {
@@ -148,6 +152,8 @@ function makeExplosion(): TParticleEffect {
     },
 
     render() {
+      const len = 0.06; // square particle
+
       buffers.position.subdata(
         particles.flatMap(({ pos, cos, sin }) => {
           const pos1 = [pos[0] - len * cos, pos[1] - len * sin, pos[2]];
@@ -173,12 +179,36 @@ function makeExplosion(): TParticleEffect {
   };
 }
 
+function makeExplosion(): TParticleEffect {
+  const count = 15;
+  const effect = makeEffect(count);
+  const particle: (number) => TParticleState = (n) => ({
+    pos: [n / 10, (n % 4) / 10, 0],
+    vec: [0.1, 0, 0],
+    angle: 0,
+    cos: 1,
+    sin: 0,
+    angular: (Math.random() - 0.5) * 10,
+  });
+  for (let n = 0; n < count; ++n) {
+    effect.emit(particle(n));
+  }
+  // const particles: TParticleState[] = Array(particleCount)
+  // .fill(0)
+  // .map((_, n) => ));
+  return {
+    ...effect,
+    emit1() {
+      effect.emit(particle(0));
+    },
+  };
+}
 // const explosion = makeExplosion();
 
 particles.push(makeExplosion(), makeExplosion());
 
 setInterval(() => {
-  // explosion.emit();
-}, 1500);
+  particles[0].emit1();
+}, 800);
 
 export { particles };
