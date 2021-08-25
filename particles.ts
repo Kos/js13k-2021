@@ -5,6 +5,7 @@ import regl, { vert, frag } from "./regl";
 const { cos, sin } = Math;
 type TParticleEffect = {
   settings: TParticleSettings;
+  rate: number | "instant";
   emit: (state: TParticleState) => void;
   update: (dt: number) => void;
   render: () => void;
@@ -14,7 +15,7 @@ type TParticleSettings = {
   // How each particle should behave ONCE it's emitted
 };
 
-const particles: TParticleEffect[] = [];
+const particles = [];
 
 /* how it works?
 - as a user
@@ -130,14 +131,26 @@ function makeEffect(particleCount: number): TParticleEffect {
   });
 
   let nextIndex = 0;
+  let mana = 0;
 
   return {
     settings: {},
 
-    emit(particle: TParticleState) {
-      let index = nextIndex++;
+    rate: 0,
+
+    emit() {
+      console.debug("EMIT");
+      const newParticle: TParticleState = {
+        pos: [0, 0, 0],
+        vec: [0.1, 0, 0],
+        angle: 0,
+        cos: 1,
+        sin: 0,
+        angular: (Math.random() - 0.5) * 10,
+      };
+      const index = nextIndex++;
       nextIndex %= particleCount;
-      particles[index] = particle;
+      particles[index] = newParticle;
     },
 
     update(dt: number) {
@@ -149,6 +162,16 @@ function makeEffect(particleCount: number): TParticleEffect {
         p.cos = cos(p.angle);
         p.sin = sin(p.angle);
       });
+
+      if (this.rate === "instant") {
+        // ...
+      } else if (this.rate > 0) {
+        mana += dt;
+        while (mana >= this.rate) {
+          mana -= this.rate;
+          this.emit();
+        }
+      }
     },
 
     render() {
@@ -182,33 +205,45 @@ function makeEffect(particleCount: number): TParticleEffect {
 function makeExplosion(): TParticleEffect {
   const count = 15;
   const effect = makeEffect(count);
-  const particle: (number) => TParticleState = (n) => ({
-    pos: [n / 10, (n % 4) / 10, 0],
-    vec: [0.1, 0, 0],
-    angle: 0,
-    cos: 1,
-    sin: 0,
-    angular: (Math.random() - 0.5) * 10,
-  });
-  for (let n = 0; n < count; ++n) {
-    effect.emit(particle(n));
-  }
-  // const particles: TParticleState[] = Array(particleCount)
-  // .fill(0)
-  // .map((_, n) => ));
+
   return {
     ...effect,
-    emit1() {
-      effect.emit(particle(0));
-    },
+    rate: 1.2,
   };
 }
 // const explosion = makeExplosion();
 
-particles.push(makeExplosion(), makeExplosion());
+function makeThruster() {
+  const count = 10;
+  const effect = makeEffect(count);
 
-setInterval(() => {
-  particles[0].emit1();
-}, 800);
+  return {
+    countdown: 0,
+    emit(angle: number) {
+      const f = 0.5;
+      effect.emit({
+        pos: [0, 0, 0],
+        vec: [cos(angle) * f, sin(angle) * f, 0],
+        angle: 0,
+        angular: 0,
+        cos: 1,
+        sin: 0,
+      });
+    },
+
+    update(dt: any, angle: number) {
+      this.countdown += dt;
+      while (this.countdown > 0) {
+        this.countdown -= 100; // ms
+        this.emit(angle);
+      }
+    },
+    render() {
+      effect.render();
+    },
+  };
+}
+
+particles.push(makeExplosion(), makeExplosion());
 
 export { particles };
