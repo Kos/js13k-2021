@@ -43,6 +43,7 @@ particles should be rendered as lines to keep the theme going, we can roll far w
 */
 
 type Props = {
+  aliveParticles: number;
   translation: REGL.Vec2;
   rotation: number;
   thickness: number;
@@ -51,6 +52,7 @@ type Props = {
 };
 
 type TParticleState = {
+  life: number;
   pos: REGL.Vec3;
   vec: REGL.Vec3;
   angle: number;
@@ -67,6 +69,7 @@ function makeEffect(particleCount: number): TParticleEffect {
     .fill(0)
     .map((_, n) => ({
       // TODO can be 2d
+      life: 0,
       pos: [0, 0, 0],
       vec: [0, 0, 0],
       angle: 0,
@@ -115,6 +118,7 @@ function makeEffect(particleCount: number): TParticleEffect {
       Side: buffers.side,
     },
     elements: buffers.elements,
+    count: (context, props) => props.aliveParticles * 6,
     uniforms: {
       Rotation: 0,
       RotationY: 0,
@@ -141,6 +145,7 @@ function makeEffect(particleCount: number): TParticleEffect {
     emit() {
       console.debug("EMIT");
       const newParticle: TParticleState = {
+        life: 999,
         pos: [0, 0, 0],
         vec: [0.1, 0, 0],
         angle: 0,
@@ -155,6 +160,7 @@ function makeEffect(particleCount: number): TParticleEffect {
 
     update(dt: number) {
       particles.forEach((p) => {
+        p.life -= dt;
         p.angle += p.angular * dt;
         p.pos[0] += p.vec[0] * dt;
         p.pos[1] += p.vec[1] * dt;
@@ -176,16 +182,17 @@ function makeEffect(particleCount: number): TParticleEffect {
 
     render() {
       const len = 0.06; // square particle
+      const alive = particles.filter((a) => a.life > 0);
 
       buffers.position.subdata(
-        particles.flatMap(({ pos, cos, sin }) => {
+        alive.flatMap(({ pos, cos, sin }) => {
           const pos1 = [pos[0] - len * cos, pos[1] - len * sin, pos[2]];
           const pos2 = [pos[0] + len * cos, pos[1] + len * sin, pos[2]];
           return [pos1, pos1, pos2, pos2];
         })
       );
       buffers.normal.subdata(
-        particles.flatMap(({ cos, sin }) => {
+        alive.flatMap(({ cos, sin }) => {
           return [
             [cos, sin, 0],
             [cos, sin, 0],
@@ -197,6 +204,7 @@ function makeEffect(particleCount: number): TParticleEffect {
 
       drawcall({
         translation: [2, 0],
+        aliveParticles: alive.length,
       });
     },
   };
@@ -212,37 +220,6 @@ function makeExplosion(): TParticleEffect {
   };
 }
 // const explosion = makeExplosion();
-
-function makeThruster() {
-  const count = 10;
-  const effect = makeEffect(count);
-
-  return {
-    countdown: 0,
-    emit(angle: number) {
-      const f = 0.5;
-      effect.emit({
-        pos: [0, 0, 0],
-        vec: [cos(angle) * f, sin(angle) * f, 0],
-        angle: 0,
-        angular: 0,
-        cos: 1,
-        sin: 0,
-      });
-    },
-
-    update(dt: any, angle: number) {
-      this.countdown += dt;
-      while (this.countdown > 0) {
-        this.countdown -= 100; // ms
-        this.emit(angle);
-      }
-    },
-    render() {
-      effect.render();
-    },
-  };
-}
 
 particles.push(makeExplosion(), makeExplosion());
 
