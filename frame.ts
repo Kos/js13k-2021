@@ -1,7 +1,7 @@
 import { Vec2 } from "regl";
 import { drawAsteroid, drawCube, drawLeship } from "./models";
 import regl from "./regl";
-import { state, step } from "./state";
+import { shipParticles, state, step } from "./state";
 import { particles } from "./particles";
 import lerp from "./lerp";
 
@@ -39,16 +39,26 @@ regl.frame((context) => {
 
   const cubes: Vec2[] = [
     [-16, -9],
-    [-16, 9],
+    [-8, -9],
+    [0, -9],
+    [8, -9],
     [16, -9],
-    [16, 9],
+    [-16, 0],
+    [-8, 0],
     [0, 0],
+    [8, 0],
+    [16, 0],
+    [-16, 9],
+    [-8, 9],
+    [0, 9],
+    [8, 9],
+    [16, 9],
   ];
   cubes.forEach((transform) =>
     drawCube({
       translation: transform,
       rotation: state.rotation,
-      scale: 0.1,
+      scale: 0.05,
       thickness: 0.2,
     })
   );
@@ -56,4 +66,5 @@ regl.frame((context) => {
   particles.forEach((p) => {
     p.render();
   });
+  shipParticles.render();
 });

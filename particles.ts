@@ -1,9 +1,10 @@
 // particle system?
 
-import REGL from "regl";
+import REGL, { Vec2 } from "regl";
 import regl, { vert, frag } from "./regl";
 const { cos, sin } = Math;
-type TParticleEffect = {
+export type TParticleEffect = {
+  pos: Vec2;
   settings: TParticleSettings;
   rate: number | "instant";
   emit: (state: TParticleState) => void;
@@ -15,7 +16,7 @@ type TParticleSettings = {
   // How each particle should behave ONCE it's emitted
 };
 
-const particles = [];
+const particles: TParticleEffect[] = [];
 
 /* how it works?
 - as a user
@@ -126,7 +127,7 @@ function makeEffect(particleCount: number): TParticleEffect {
       Aspect: (context) => context.viewportWidth / context.viewportHeight,
       Translation: (context, props) => props.translation || [0, 0],
       Thickness: (context, props) => props.thickness * 0.1 || 0.01,
-      Scale: (context, props) => props.scale || 0.5,
+      Scale: 1,
       Color: (context, props) => props.color || [1, 1, 0],
     },
     depth: {
@@ -138,16 +139,18 @@ function makeEffect(particleCount: number): TParticleEffect {
   let mana = 0;
 
   return {
+    pos: [0, 0],
+
     settings: {},
 
     rate: 0,
 
     emit() {
-      console.debug("EMIT");
       const newParticle: TParticleState = {
-        life: 999,
-        pos: [0, 0, 0],
-        vec: [0.1, 0, 0],
+        life: 2,
+        pos: [this.pos[0], this.pos[1], 0],
+        vec: [0, 0, 0],
+
         angle: 0,
         cos: 1,
         sin: 0,
@@ -186,8 +189,16 @@ function makeEffect(particleCount: number): TParticleEffect {
 
       buffers.position.subdata(
         alive.flatMap(({ pos, cos, sin }) => {
-          const pos1 = [pos[0] - len * cos, pos[1] - len * sin, pos[2]];
-          const pos2 = [pos[0] + len * cos, pos[1] + len * sin, pos[2]];
+          const pos1 = [
+            pos[0] / 16 - len * cos,
+            pos[1] / 16 - len * sin,
+            pos[2],
+          ];
+          const pos2 = [
+            pos[0] / 16 + len * cos,
+            pos[1] / 16 + len * sin,
+            pos[2],
+          ];
           return [pos1, pos1, pos2, pos2];
         })
       );
@@ -203,14 +214,13 @@ function makeEffect(particleCount: number): TParticleEffect {
       );
 
       drawcall({
-        translation: [2, 0],
         aliveParticles: alive.length,
       });
     },
   };
 }
 
-function makeExplosion(): TParticleEffect {
+export function makeExplosion(): TParticleEffect {
   const count = 15;
   const effect = makeEffect(count);
 
@@ -221,6 +231,6 @@ function makeExplosion(): TParticleEffect {
 }
 // const explosion = makeExplosion();
 
-particles.push(makeExplosion(), makeExplosion());
+// particles.push(makeExplosion(), makeExplosion());
 
 export { particles };

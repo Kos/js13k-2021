@@ -1,5 +1,6 @@
 import { Vec2, Vec3 } from "regl";
 import input from "./input";
+import { makeExplosion, TParticleEffect } from "./particles";
 const { cos, sin, random } = Math;
 const r1 = () => random() * 0.1;
 const r2 = () => random() * 0.2;
@@ -73,6 +74,8 @@ function step(dt) {
   updateShip(state.ship, dt);
 }
 
+let shipParticles: TParticleEffect = null;
+
 function updateShip(s: TShip, dt: number) {
   const sens = 4;
   const accel = 48;
@@ -89,7 +92,15 @@ function updateShip(s: TShip, dt: number) {
   s.pos[0] += s.vec[0] * dt;
   s.pos[1] += s.vec[1] * dt;
   wraparound(s.pos);
+
+  if (!shipParticles) shipParticles = makeExplosion();
+  shipParticles.pos = [...s.pos];
+  // shipParticles.rate = input.thrust ? 0.1 : 100;
+  shipParticles.rate = 0.05;
+  shipParticles.update(dt);
 }
+
+export { shipParticles };
 
 function wraparound(p: Vec2) {
   // wraparound with a little deadzone for simplicity

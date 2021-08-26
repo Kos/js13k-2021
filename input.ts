@@ -22,7 +22,6 @@ const keymap: Record<string, TInputProp> = {
 
 window.addEventListener("keydown", ({ code }) => {
   input[keymap[code]] = 1;
-  console.log("input", input);
 });
 window.addEventListener("keyup", ({ code }) => {
   input[keymap[code]] = 0;

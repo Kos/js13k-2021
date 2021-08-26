@@ -42,6 +42,8 @@ vec3 rotate(vec3 v, vec3 axis, float angle) {
 
 void main() {
     float depthMultiplier = 6.0;
+    
+    // MODEL SPACE
 
     // Rotate and scale the model
     vec3 pos = Position;
@@ -67,8 +69,11 @@ void main() {
     vec2 binormal = normalize(vec2(norm2d.y, -norm2d.x));
 
     // Faux perspective
-    float pseudoDepth = (pos.z*depthMultiplier + 1.0) * 0.5;
-    float depthScaleFactor = pow(2.0, pseudoDepth) *0.5;
+    // float pseudoDepth = (pos.z*depthMultiplier + 1.0) * 0.5;
+    // float depthScaleFactor = pow(2.0, pseudoDepth) *0.5;
+
+    float pseudoDepth = pos.z*7.0;
+    float depthScaleFactor = pow(2.0, pseudoDepth);
     pos2d *= depthScaleFactor; // This effect is somewhat fishy
 
     // Extrude the line
