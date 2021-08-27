@@ -63,6 +63,7 @@ type Uniforms = {
   Scale: number;
   Aspect: number;
   Color: REGL.Vec3;
+  LifeMax: number;
 };
 
 type Props = {
@@ -84,6 +85,7 @@ const makeMeshDrawCall = (model: ProcessedModel) =>
       Position: model.Position,
       Normal: model.Normal,
       Side: model.Side,
+      Life: { constant: [1] },
     },
     elements: model.Elements,
     uniforms: {
@@ -95,6 +97,7 @@ const makeMeshDrawCall = (model: ProcessedModel) =>
       Thickness: (context, props) => props.thickness * 0.01 || 0.01,
       Scale: (context, props) => props.scale || 0.5,
       Color: (context, props) => props.color || [1, 1, 0],
+      LifeMax: 1,
     },
   });
 

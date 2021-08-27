@@ -3,6 +3,7 @@ precision mediump float;
 attribute vec3 Position;
 attribute vec3 Normal;
 attribute float Side;
+attribute float Life;
 
 uniform vec2 Translation;
 uniform float Rotation;
@@ -15,6 +16,7 @@ uniform vec3 Color;
 
 varying float VBar;
 varying vec3 VColor;
+varying float VLife;
 
 vec2 rotate(vec2 v, float a) {
 	float s = sin(a);
@@ -94,4 +96,5 @@ void main() {
     gl_Position = vec4(pos2d, -pos.z, 1);
     VBar = Side;
     VColor = Color;
+    VLife = Life;
 }

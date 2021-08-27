@@ -2,7 +2,9 @@ precision mediump float;
 
 varying float VBar;
 varying vec3 VColor;
+varying float VLife;
 
+uniform float LifeMax;
 
 void main() {
     // Left and right edges
@@ -14,6 +16,6 @@ void main() {
     r3 *= r3;
     r3 = 1.0-r3;
 
-    vec3 color = VColor;
+    vec3 color = VColor * (VLife/LifeMax);
     gl_FragColor = vec4(color, 1);
 }

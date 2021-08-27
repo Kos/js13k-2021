@@ -1,6 +1,6 @@
 import { Vec2, Vec3 } from "regl";
 import input from "./input";
-import { makeExplosion, TParticleEffect } from "./particles";
+import { makeExhaust, TParticleEffect } from "./particles";
 const { cos, sin, random } = Math;
 const r1 = () => random() * 0.1;
 const r2 = () => random() * 0.2;
@@ -80,9 +80,11 @@ function updateShip(s: TShip, dt: number) {
   const sens = 4;
   const accel = 48;
   s.angle += (input.right - input.left) * sens * dt;
+  const si = sin(s.angle),
+    co = cos(s.angle);
   if (input.thrust) {
-    s.vec[0] += accel * dt * sin(s.angle);
-    s.vec[1] += accel * dt * cos(s.angle);
+    s.vec[0] += accel * dt * si;
+    s.vec[1] += accel * dt * co;
   }
   s.thrust += (input.right - input.left) * dt * 4;
   s.vec[0] *= Math.pow(0.5, dt * 2);
@@ -93,10 +95,12 @@ function updateShip(s: TShip, dt: number) {
   s.pos[1] += s.vec[1] * dt;
   wraparound(s.pos);
 
-  if (!shipParticles) shipParticles = makeExplosion();
-  shipParticles.pos = [...s.pos];
-  // shipParticles.rate = input.thrust ? 0.1 : 100;
-  shipParticles.rate = 0.05;
+  if (!shipParticles) shipParticles = makeExhaust();
+  shipParticles.pos = [s.pos[0] - si * 0.6, s.pos[1] - co * 0.6];
+  shipParticles.vec = [s.vec[0] - si * 10, s.vec[1] - co * 10];
+  shipParticles.variance = 3;
+  // shipParticles.
+  shipParticles.rate = input.thrust ? 0.02 : 100;
   shipParticles.update(dt);
 }
 

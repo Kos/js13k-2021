@@ -2,17 +2,24 @@
 
 import REGL, { Vec2 } from "regl";
 import regl, { vert, frag } from "./regl";
-const { cos, sin } = Math;
+const { cos, sin, random } = Math;
 export type TParticleEffect = {
+  // How particles should be emitted and updated
   pos: Vec2;
-  settings: TParticleSettings;
+  vec: Vec2;
+  variance: number;
   rate: number | "instant";
   emit: (state: TParticleState) => void;
   update: (dt: number) => void;
   render: () => void;
 };
 
+const r11 = () => random() * 2 - 1;
+
 type TParticleSettings = {
+  len: number;
+  thickness: number;
+  life: number;
   // How each particle should behave ONCE it's emitted
 };
 
@@ -66,9 +73,16 @@ function makeEffect(particleCount: number): TParticleEffect {
   // unlike models, geometry for particles need to be dynamic since we're going to draw whole system in one go ...
 
   // Init state
+  const settings: TParticleSettings = {
+    len: 0.01,
+    thickness: 0.01,
+    life: 0.7,
+    color: [0.5, 0.5, 0.8],
+  };
+
   const particles: TParticleState[] = Array(particleCount)
     .fill(0)
-    .map((_, n) => ({
+    .map(() => ({
       // TODO can be 2d
       life: 0,
       pos: [0, 0, 0],
@@ -95,7 +109,11 @@ function makeEffect(particleCount: number): TParticleEffect {
     }),
     side: regl.buffer({
       type: "float",
-      data: particles.flatMap((_, n) => [-1, 1, -1, 1]),
+      data: particles.flatMap(() => [-1, 1, -1, 1]),
+    }),
+    life: regl.buffer({
+      type: "float",
+      length: vertexCount * 4,
     }),
     elements: regl.elements(
       particles.flatMap((_, n) => [
@@ -117,6 +135,7 @@ function makeEffect(particleCount: number): TParticleEffect {
       Position: buffers.position,
       Normal: buffers.normal,
       Side: buffers.side,
+      Life: buffers.life,
     },
     elements: buffers.elements,
     count: (context, props) => props.aliveParticles * 6,
@@ -126,9 +145,10 @@ function makeEffect(particleCount: number): TParticleEffect {
       RotationZ: 0,
       Aspect: (context) => context.viewportWidth / context.viewportHeight,
       Translation: (context, props) => props.translation || [0, 0],
-      Thickness: (context, props) => props.thickness * 0.1 || 0.01,
+      Thickness: (context, props) => settings.thickness,
       Scale: 1,
-      Color: (context, props) => props.color || [1, 1, 0],
+      Color: settings.color,
+      LifeMax: settings.life,
     },
     depth: {
       enable: false,
@@ -140,16 +160,20 @@ function makeEffect(particleCount: number): TParticleEffect {
 
   return {
     pos: [0, 0],
-
-    settings: {},
+    vec: [0, 0],
+    variance: 2,
 
     rate: 0,
 
     emit() {
       const newParticle: TParticleState = {
-        life: 2,
+        life: settings.life,
         pos: [this.pos[0], this.pos[1], 0],
-        vec: [0, 0, 0],
+        vec: [
+          this.vec[0] + this.variance * r11(),
+          this.vec[1] + this.variance * r11(),
+          0,
+        ],
 
         angle: 0,
         cos: 1,
@@ -184,7 +208,9 @@ function makeEffect(particleCount: number): TParticleEffect {
     },
 
     render() {
-      const len = 0.06; // square particle
+      const { len = 0.005 } = settings;
+      // const {len} = this.
+      // const len = 0.06; // square particle
       const alive = particles.filter((a) => a.life > 0);
 
       buffers.position.subdata(
@@ -212,6 +238,9 @@ function makeEffect(particleCount: number): TParticleEffect {
           ];
         })
       );
+      buffers.life.subdata(
+        alive.flatMap((p) => [p.life, p.life, p.life, p.life])
+      );
 
       drawcall({
         aliveParticles: alive.length,
@@ -220,7 +249,7 @@ function makeEffect(particleCount: number): TParticleEffect {
   };
 }
 
-export function makeExplosion(): TParticleEffect {
+export function makeExhaust(): TParticleEffect {
   const count = 15;
   const effect = makeEffect(count);
 
