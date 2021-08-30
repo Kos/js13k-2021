@@ -18,6 +18,7 @@ const keymap: Record<string, TInputProp> = {
   ArrowLeft: "left",
   ArrowRight: "right",
   ArrowUp: "thrust",
+  Space: "fire",
 };
 
 window.addEventListener("keydown", ({ code }) => {

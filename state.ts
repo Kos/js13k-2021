@@ -12,9 +12,17 @@ type Asteroid = {
   color: Vec3;
 };
 
+type Bullet = {
+  pos: Vec2;
+  vec: Vec2;
+  rotation: number;
+  life: number;
+};
+
 type State = {
   rotation: number;
   asteroids: Asteroid[];
+  bullets: Bullet[];
   ship: {
     pos: Vec2;
     vec: Vec2;
@@ -43,6 +51,7 @@ export const mutators = {
 
 const state: State = {
   asteroids: [],
+  bullets: [],
   rotation: 0,
   ship: {
     pos: [0, 0],
@@ -69,6 +78,15 @@ function step(dt) {
     a.pos[1] += a.vec[1] * dt;
     wraparound(a.pos);
     a.rotation += dt;
+  });
+  state.bullets = state.bullets.flatMap((b) => {
+    b.pos[0] += b.vec[0] * dt;
+    b.pos[1] += b.vec[1] * dt;
+    b.life -= dt;
+    if (b.life > 0) {
+      return [b];
+    }
+    return [];
   });
 
   updateShip(state.ship, dt);
@@ -99,9 +117,19 @@ function updateShip(s: TShip, dt: number) {
   shipParticles.pos = [s.pos[0] - si * 0.6, s.pos[1] - co * 0.6];
   shipParticles.vec = [s.vec[0] - si * 10, s.vec[1] - co * 10];
   shipParticles.variance = 3;
-  // shipParticles.
+  // shipParticles.b
   shipParticles.rate = input.thrust ? 0.02 : 100;
   shipParticles.update(dt);
+
+  if (input.fire) {
+    const bullet: Bullet = {
+      life: 1,
+      pos: [s.pos[0] + si, s.pos[1] + co],
+      vec: [si * 16 + s.vec[0], co * 16 + s.vec[1]],
+      rotation: s.angle,
+    };
+    state.bullets.push(bullet);
+  }
 }
 
 export { shipParticles };
@@ -114,4 +142,5 @@ function wraparound(p: Vec2) {
   if (p[1] < -10) p[1] += 20;
 }
 
+window.state = state;
 export { state, step };

@@ -27,6 +27,15 @@ regl.frame((context) => {
       color: a.color,
     })
   );
+  state.bullets.forEach((b) => {
+    drawCube({
+      translation: b.pos,
+      rotation: b.rotation,
+      scale: 0.01,
+      thickness: 0.2,
+      color: [1, 0, 0],
+    });
+  });
 
   drawLeship({
     translation: state.ship.pos,
