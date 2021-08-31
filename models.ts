@@ -59,6 +59,16 @@ function makeCircle(): Model {
   };
 }
 
+function makeLine(): Model {
+  return {
+    verts: [
+      [0, 0, 0],
+      [0, 1, 0],
+    ],
+    elements: [[0, 1]],
+  };
+}
+
 type ProcessedModel = ReturnType<typeof preprocessModel>;
 
 // Fix orientation that I messed up earlier
@@ -72,6 +82,7 @@ const models = {
   asteroid: preprocessModel(asteroidModel),
   leship: preprocessModel(leshipModel),
   circle: preprocessModel(makeCircle()),
+  line: preprocessModel(makeLine()),
 };
 
 type Uniforms = {
@@ -125,5 +136,6 @@ const drawCube = makeMeshDrawCall(models.cube);
 const drawAsteroid = makeMeshDrawCall(models.asteroid);
 const drawLeship = makeMeshDrawCall(models.leship);
 const drawCircle = makeMeshDrawCall(models.circle);
+const drawLine = makeMeshDrawCall(models.line);
 
-export { drawCube, drawAsteroid, drawLeship, drawCircle };
+export { drawCube, drawAsteroid, drawLeship, drawCircle, drawLine };

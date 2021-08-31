@@ -1,5 +1,11 @@
 import { Vec2 } from "regl";
-import { drawAsteroid, drawCircle, drawCube, drawLeship } from "./models";
+import {
+  drawAsteroid,
+  drawCircle,
+  drawCube,
+  drawLeship,
+  drawLine,
+} from "./models";
 import regl from "./regl";
 import { shipParticles, state, step } from "./state";
 import { particles } from "./particles";
@@ -22,7 +28,7 @@ regl.frame((context) => {
     drawAsteroid({
       translation: a.pos,
       rotation: a.rotation + state.rotation,
-      scale: 0.1,
+      scale: (0.1 * a.colliderSize) / 1.6,
       thickness: 0.2,
       color: a.color,
     });
@@ -34,11 +40,11 @@ regl.frame((context) => {
     });
   });
   state.bullets.forEach((b) => {
-    drawCube({
+    drawLine({
       translation: b.pos,
-      rotation: b.rotation,
-      scale: 0.01,
-      thickness: 0.2,
+      rotationZ: b.rotation,
+      scale: 0.05,
+      thickness: 0.3,
       color: [1, 0, 0],
     });
   });

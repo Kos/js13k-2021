@@ -13,9 +13,10 @@ type TAsteroid = {
   color: Vec3;
   collides?: boolean;
   colliderSize: number;
+  children: number[];
 };
 
-type Bullet = {
+type TBullet = {
   pos: Vec2;
   vec: Vec2;
   rotation: number;
@@ -25,7 +26,7 @@ type Bullet = {
 type State = {
   rotation: number;
   asteroids: TAsteroid[];
-  bullets: Bullet[];
+  bullets: TBullet[];
   ship: {
     pos: Vec2;
     vec: Vec2;
@@ -34,6 +35,7 @@ type State = {
     collides?: boolean;
     colliderSize: number;
   };
+  cooldowns: number[];
 };
 
 type TShip = State["ship"];
@@ -49,6 +51,7 @@ export const mutators = {
       rotation: 0,
       color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
       colliderSize: 1.6,
+      children: [4, 3, 2],
     });
   },
 };
@@ -66,6 +69,7 @@ const state: State = {
     angle: 1,
     colliderSize: 0.5,
   },
+  cooldowns: [0, 0, 0],
 };
 
 // save state on refresh
@@ -87,7 +91,7 @@ function step(dt) {
     wraparound(a.pos);
     a.rotation += dt;
     a.collides = false;
-    collide(a, state.ship);
+    collide(a, state.ship, state.ship.colliderSize);
   });
   state.bullets = state.bullets.flatMap((b) => {
     b.pos[0] += b.vec[0] * dt;
@@ -97,6 +101,39 @@ function step(dt) {
     if (b.life > 0) {
       return [b];
     }
+    return [];
+  });
+  // O(n^2) party [INSERT QUADTREE HERE]
+  state.bullets.forEach((b) =>
+    state.asteroids.forEach((a) => {
+      collide(a, b, 0);
+    })
+  );
+  // end O(N^2) party
+
+  state.asteroids = state.asteroids.flatMap((a) => {
+    if (!a.collides) {
+      return [a];
+    }
+    const children = [...a.children];
+    if (!children.length) {
+      return [];
+    }
+    const n = children.shift();
+    return Array(n)
+      .fill(0)
+      .map((_) => {
+        const x = Math.random() * 6;
+        return {
+          pos: [...a.pos],
+          vec: [cos(x) * 4, sin(x) * 4],
+          rotation: 0,
+          color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
+          colliderSize: a.colliderSize / 2,
+          children: [...children],
+        };
+      });
+
     return [];
   });
 
@@ -131,21 +168,27 @@ function updateShip(s: TShip, dt: number) {
   shipParticles.rate = input.thrust ? 0.02 : 100;
   shipParticles.update(dt);
 
-  if (input.fire) {
-    const bullet: Bullet = {
+  state.cooldowns = state.cooldowns.map((x) => Math.max(0, x - dt));
+  if (input.fire && state.cooldowns[0] === 0) {
+    const bullet: TBullet = {
       life: 1,
       pos: [s.pos[0] + si, s.pos[1] + co],
       vec: [si * 16 + s.vec[0], co * 16 + s.vec[1]],
       rotation: s.angle,
     };
     state.bullets.push(bullet);
+    state.cooldowns[0] = 0.2;
   }
 }
 
-function collide(a: TAsteroid, s: TShip) {
+function collide(
+  a: TAsteroid,
+  s: { pos: Vec2; collides?: boolean },
+  colliderSize: number
+) {
   const sq = (a) => a * a;
   const dist2 = sq(a.pos[0] - s.pos[0]) + sq(a.pos[1] - s.pos[1]);
-  const rng2 = sq(a.colliderSize + s.colliderSize);
+  const rng2 = sq(a.colliderSize + colliderSize);
   if (dist2 < rng2) {
     a.collides = s.collides = true;
   }
