@@ -20,6 +20,7 @@ type TParticleSettings = {
   len: number;
   thickness: number;
   life: number;
+  color: [number, number, number];
   // How each particle should behave ONCE it's emitted
 };
 
