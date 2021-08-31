@@ -1,15 +1,18 @@
 import { Vec2, Vec3 } from "regl";
+import { createSolutionBuilder } from "typescript";
 import input from "./input";
 import { makeExhaust, TParticleEffect } from "./particles";
 const { cos, sin, random } = Math;
 const r1 = () => random() * 0.1;
 const r2 = () => random() * 0.2;
 
-type Asteroid = {
+type TAsteroid = {
   pos: Vec2;
   vec: Vec2;
   rotation: number;
   color: Vec3;
+  collides?: boolean;
+  colliderSize: number;
 };
 
 type Bullet = {
@@ -21,13 +24,15 @@ type Bullet = {
 
 type State = {
   rotation: number;
-  asteroids: Asteroid[];
+  asteroids: TAsteroid[];
   bullets: Bullet[];
   ship: {
     pos: Vec2;
     vec: Vec2;
     thrust: number;
     angle: number;
+    collides?: boolean;
+    colliderSize: number;
   };
 };
 
@@ -43,6 +48,7 @@ export const mutators = {
       vec: [cos(x) * 4, sin(x) * 4],
       rotation: 0,
       color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
+      colliderSize: 1.6,
     });
   },
 };
@@ -58,6 +64,7 @@ const state: State = {
     vec: [0, 0],
     thrust: 0,
     angle: 1,
+    colliderSize: 0.5,
   },
 };
 
@@ -73,15 +80,19 @@ window.onbeforeunload = () => {
 function step(dt) {
   state.rotation += dt;
 
+  state.ship.collides = false;
   state.asteroids.forEach((a) => {
     a.pos[0] += a.vec[0] * dt;
     a.pos[1] += a.vec[1] * dt;
     wraparound(a.pos);
     a.rotation += dt;
+    a.collides = false;
+    collide(a, state.ship);
   });
   state.bullets = state.bullets.flatMap((b) => {
     b.pos[0] += b.vec[0] * dt;
     b.pos[1] += b.vec[1] * dt;
+    wraparound(b.pos);
     b.life -= dt;
     if (b.life > 0) {
       return [b];
@@ -117,7 +128,6 @@ function updateShip(s: TShip, dt: number) {
   shipParticles.pos = [s.pos[0] - si * 0.6, s.pos[1] - co * 0.6];
   shipParticles.vec = [s.vec[0] - si * 10, s.vec[1] - co * 10];
   shipParticles.variance = 3;
-  // shipParticles.b
   shipParticles.rate = input.thrust ? 0.02 : 100;
   shipParticles.update(dt);
 
@@ -132,15 +142,26 @@ function updateShip(s: TShip, dt: number) {
   }
 }
 
+function collide(a: TAsteroid, s: TShip) {
+  const sq = (a) => a * a;
+  const dist2 = sq(a.pos[0] - s.pos[0]) + sq(a.pos[1] - s.pos[1]);
+  const rng2 = sq(a.colliderSize + s.colliderSize);
+  if (dist2 < rng2) {
+    a.collides = s.collides = true;
+  }
+}
+
 export { shipParticles };
 
 function wraparound(p: Vec2) {
   // wraparound with a little deadzone for simplicity
+  // idea: different deadzone for different objects
   if (p[0] > 17) p[0] -= 34;
   if (p[0] < -17) p[0] += 34;
   if (p[1] > 10) p[1] -= 20;
   if (p[1] < -10) p[1] += 20;
 }
 
+// @ts-ignore
 window.state = state;
 export { state, step };

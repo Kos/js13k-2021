@@ -1,10 +1,11 @@
-import { Vec2, Vec3 } from "regl";
+import type { Vec2, Vec3 } from "regl";
 import regl, { vert, frag } from "./regl";
 
 import REGL from "regl";
 import cubeModel from "./models/cube.json";
 import asteroidModel from "./models/asteroid.json";
 import leshipModel from "./models/leship.json";
+const { PI, cos, sin } = Math;
 
 type Model = {
   verts: number[][];
@@ -40,18 +41,37 @@ function preprocessModel(m: Model) {
   };
 }
 
+function makeCircle(): Model {
+  const count = 40;
+  const verts = [];
+  const elements = [];
+  for (let i = 0; i < count; ++i) {
+    const angle = (2 * PI * i) / count;
+    verts.push([cos(angle), sin(angle), 0]);
+    elements.push([i, i + 1]);
+  }
+  elements[elements.length - 1][1] = 0;
+
+  console.log({ verts, elements });
+  return {
+    verts,
+    elements,
+  };
+}
+
 type ProcessedModel = ReturnType<typeof preprocessModel>;
 
 // Fix orientation that I messed up earlier
 leshipModel.verts.forEach((vert) => {
   [vert[2], vert[1]] = [vert[1], -vert[2]];
-  vert[1] -= 0.5;
+  vert[1] -= 0.8;
 });
 
 const models = {
   cube: preprocessModel(cubeModel),
   asteroid: preprocessModel(asteroidModel),
   leship: preprocessModel(leshipModel),
+  circle: preprocessModel(makeCircle()),
 };
 
 type Uniforms = {
@@ -104,5 +124,6 @@ const makeMeshDrawCall = (model: ProcessedModel) =>
 const drawCube = makeMeshDrawCall(models.cube);
 const drawAsteroid = makeMeshDrawCall(models.asteroid);
 const drawLeship = makeMeshDrawCall(models.leship);
+const drawCircle = makeMeshDrawCall(models.circle);
 
-export { drawCube, drawAsteroid, drawLeship };
+export { drawCube, drawAsteroid, drawLeship, drawCircle };
