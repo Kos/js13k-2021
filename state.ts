@@ -21,6 +21,7 @@ type TBullet = {
   vec: Vec2;
   rotation: number;
   life: number;
+  collides?: boolean;
 };
 
 type State = {
@@ -107,7 +108,7 @@ function step(dt) {
     b.pos[1] += b.vec[1] * dt;
     wraparound(b.pos);
     b.life -= dt;
-    if (b.life > 0) {
+    if (b.life > 0 && !b.collides) {
       return [b];
     }
     return [];
