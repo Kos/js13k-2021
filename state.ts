@@ -36,6 +36,7 @@ type State = {
     colliderSize: number;
     aura: number;
   };
+  auraSize: number;
   cooldowns: number[];
   scheduledBullets: number[];
 };
@@ -72,6 +73,7 @@ const state: State = {
     colliderSize: 0.5,
     aura: 0,
   },
+  auraSize: 5,
   cooldowns: [0, 0, 0],
   scheduledBullets: [],
 };
@@ -96,6 +98,9 @@ function step(dt) {
     a.rotation += dt;
     a.collides = false;
     collide(a, state.ship, state.ship.colliderSize);
+    if (state.ship.aura) {
+      collideAura(a, state.ship, state.ship.aura);
+    }
   });
   state.bullets = state.bullets.flatMap((b) => {
     b.pos[0] += b.vec[0] * dt;
@@ -203,17 +208,28 @@ function updateShip(s: TShip, dt: number) {
     state.ship.aura = 0.1;
   }
 }
+const sq = (a) => a * a;
 
 function collide(
   a: TAsteroid,
   s: { pos: Vec2; collides?: boolean },
   colliderSize: number
 ) {
-  const sq = (a) => a * a;
   const dist2 = sq(a.pos[0] - s.pos[0]) + sq(a.pos[1] - s.pos[1]);
   const rng2 = sq(a.colliderSize + colliderSize);
   if (dist2 < rng2) {
     a.collides = s.collides = true;
+  }
+}
+
+function collideAura(
+  a: TAsteroid,
+  s: { pos: Vec2; collides?: boolean },
+  auraSize: number
+) {
+  const dist2 = sq(a.pos[0] - s.pos[0]) + sq(a.pos[1] - s.pos[1]);
+  if (dist2 < sq(auraSize * state.auraSize + a.colliderSize)) {
+    a.collides = true;
   }
 }
 
