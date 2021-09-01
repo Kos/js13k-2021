@@ -34,8 +34,10 @@ type State = {
     angle: number;
     collides?: boolean;
     colliderSize: number;
+    aura: number;
   };
   cooldowns: number[];
+  scheduledBullets: number[];
 };
 
 type TShip = State["ship"];
@@ -68,8 +70,10 @@ const state: State = {
     thrust: 0,
     angle: 1,
     colliderSize: 0.5,
+    aura: 0,
   },
   cooldowns: [0, 0, 0],
+  scheduledBullets: [],
 };
 
 // save state on refresh
@@ -133,8 +137,6 @@ function step(dt) {
           children: [...children],
         };
       });
-
-    return [];
   });
 
   updateShip(state.ship, dt);
@@ -168,16 +170,37 @@ function updateShip(s: TShip, dt: number) {
   shipParticles.rate = input.thrust ? 0.02 : 100;
   shipParticles.update(dt);
 
+  state.scheduledBullets = state.scheduledBullets.flatMap((delay) => {
+    delay -= dt;
+    if (delay > 0) {
+      return [delay];
+    } else {
+      const bullet: TBullet = {
+        life: 1,
+        pos: [s.pos[0] + si, s.pos[1] + co],
+        vec: [si * 33 + s.vec[0], co * 33 + s.vec[1]],
+        rotation: s.angle,
+      };
+      state.bullets.push(bullet);
+      return [];
+    }
+  });
+
+  if (state.ship.aura) {
+    state.ship.aura += dt;
+    if (state.ship.aura >= 0.6) {
+      state.ship.aura = 0;
+    }
+  }
+
   state.cooldowns = state.cooldowns.map((x) => Math.max(0, x - dt));
-  if (input.fire && state.cooldowns[0] === 0) {
-    const bullet: TBullet = {
-      life: 1,
-      pos: [s.pos[0] + si, s.pos[1] + co],
-      vec: [si * 16 + s.vec[0], co * 16 + s.vec[1]],
-      rotation: s.angle,
-    };
-    state.bullets.push(bullet);
-    state.cooldowns[0] = 0.2;
+  if (input.skill1 && state.cooldowns[0] === 0) {
+    state.cooldowns[0] = 0.6 * 4;
+    state.scheduledBullets.push(0.15, 0.3, 0.45, 0.6, 0.75);
+  }
+  if (input.skill2 && state.cooldowns[1] === 0) {
+    state.cooldowns[1] = 0.6 * 8;
+    state.ship.aura = 0.1;
   }
 }
 

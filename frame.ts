@@ -13,6 +13,8 @@ import lerp from "./lerp";
 
 let prevTime = null;
 
+let AuraSize = 5;
+
 regl.frame((context) => {
   const dt = context.time - (prevTime || context.time);
   prevTime = context.time;
@@ -63,6 +65,23 @@ regl.frame((context) => {
     thickness: 0.4,
     color: state.ship.collides ? [1, 0, 0] : [0.2, 0.2, 0.2],
   });
+  if (state.ship.aura) {
+    const auraThickness = 3 * (0.6 - state.ship.aura);
+    drawCircle({
+      translation: state.ship.pos,
+      scale: (state.ship.aura * AuraSize) / 16,
+      thickness: auraThickness,
+      color: [1, 0, 1],
+    });
+    [0.8, 0.9, 1.1, 1.3].forEach((x) => {
+      drawCircle({
+        translation: state.ship.pos,
+        scale: (x * (state.ship.aura * AuraSize)) / 16,
+        thickness: auraThickness * 0.5,
+        color: [0.4 * x, 0, 0.4 / x],
+      });
+    });
+  }
 
   const cubes: Vec2[] = [
     [-16, -9],
@@ -94,4 +113,13 @@ regl.frame((context) => {
     p.render();
   });
   shipParticles.render();
+
+  [-1, 0, 1].forEach((x, i) => {
+    drawCube({
+      translation: [x * 2, -8],
+      scale: 0.08,
+      thickness: 0.2,
+      color: state.cooldowns[i] > 0 ? [0.1, 0.1, 0.1] : [0.7, 0.7, 0.7],
+    });
+  });
 });
