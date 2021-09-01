@@ -1,6 +1,11 @@
 import { Vec2, Vec3 } from "regl";
 import input from "./input";
-import { makeExhaust, TParticleEffect } from "./particles";
+import {
+  makeExhaust,
+  makeExplosion,
+  particles,
+  TParticleEffect,
+} from "./particles";
 const { cos, sin, random } = Math;
 const r1 = () => random() * 0.1;
 const r2 = () => random() * 0.2;
@@ -133,6 +138,7 @@ function step(dt) {
     if (!a.collides) {
       return [a];
     }
+    if (particles.length < 20) particles.push(...makeExplosion(a.pos));
     const children = [...a.children];
     if (!children.length) {
       return [];
