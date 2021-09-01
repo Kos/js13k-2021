@@ -1,5 +1,6 @@
 // Hacks - remove later
 
+import { makeExplosion, particles } from "./particles";
 import { mutators, state } from "./state";
 
 window.addEventListener("keypress", (e) => {
@@ -8,6 +9,9 @@ window.addEventListener("keypress", (e) => {
   }
   if (e.key === "A") {
     state.asteroids = [];
+  }
+  if (e.key === "P") {
+    particles.push(...makeExplosion([-3, 4]));
   }
 });
 

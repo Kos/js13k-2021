@@ -21,6 +21,7 @@ regl.frame((context) => {
 
   step(dt);
   particles.map((system) => system.update(dt));
+  particles.splice(0, particles.length, ...particles.filter((x) => x.alive));
 
   regl.clear({
     color: [0, 0, 0, 1],

@@ -1,5 +1,4 @@
 import { Vec2, Vec3 } from "regl";
-import { createSolutionBuilder } from "typescript";
 import input from "./input";
 import { makeExhaust, TParticleEffect } from "./particles";
 const { cos, sin, random } = Math;

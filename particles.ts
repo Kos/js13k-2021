@@ -8,8 +8,10 @@ export type TParticleEffect = {
   pos: Vec2;
   vec: Vec2;
   variance: number;
+  angularVariance: number;
   rate: number | "instant";
-  emit: (state: TParticleState) => void;
+  alive: boolean;
+  emit: () => void;
   update: (dt: number) => void;
   render: () => void;
 };
@@ -70,17 +72,13 @@ type TParticleState = {
   sin: number;
 };
 
-function makeEffect(particleCount: number): TParticleEffect {
+function makeEffect(
+  particleCount: number,
+  settings: TParticleSettings
+): TParticleEffect {
   // unlike models, geometry for particles need to be dynamic since we're going to draw whole system in one go ...
 
   // Init state
-  const settings: TParticleSettings = {
-    len: 0.01,
-    thickness: 0.01,
-    life: 0.7,
-    color: [0.5, 0.5, 0.8],
-  };
-
   const particles: TParticleState[] = Array(particleCount)
     .fill(0)
     .map(() => ({
@@ -160,9 +158,11 @@ function makeEffect(particleCount: number): TParticleEffect {
   let mana = 0;
 
   return {
+    alive: true,
     pos: [0, 0],
     vec: [0, 0],
     variance: 2,
+    angularVariance: 5,
 
     rate: 0,
 
@@ -176,11 +176,12 @@ function makeEffect(particleCount: number): TParticleEffect {
           0,
         ],
 
-        angle: 0,
+        angle: 0, // tbd
         cos: 1,
         sin: 0,
-        angular: (Math.random() - 0.5) * 10,
+        angular: this.angularVariance * r11(),
       };
+      newParticle.angle = Math.atan2(newParticle.vec[1], newParticle.vec[0]);
       const index = nextIndex++;
       nextIndex %= particleCount;
       particles[index] = newParticle;
@@ -198,13 +199,24 @@ function makeEffect(particleCount: number): TParticleEffect {
       });
 
       if (this.rate === "instant") {
-        // ...
+        this.rate = "expired";
+        for (let i = 0; i < particleCount; ++i) {
+          this.emit();
+        }
       } else if (this.rate > 0) {
         mana += dt;
         while (mana >= this.rate) {
           mana -= this.rate;
           this.emit();
         }
+      }
+
+      if (
+        this.alive &&
+        this.rate === "expired" &&
+        !particles.some((x) => x.life > 0)
+      ) {
+        this.alive = false;
       }
     },
 
@@ -252,15 +264,85 @@ function makeEffect(particleCount: number): TParticleEffect {
 
 export function makeExhaust(): TParticleEffect {
   const count = 15;
-  const effect = makeEffect(count);
+  const effect = makeEffect(count, {
+    len: 0.01,
+    thickness: 0.01,
+    life: 0.7,
+    color: [0.5, 0.5, 0.8],
+  });
 
   return {
     ...effect,
     rate: 1.2,
   };
 }
-// const explosion = makeExplosion();
 
-// particles.push(makeExplosion(), makeExplosion());
+export function makeExplosion(pos: Vec2): TParticleEffect[] {
+  const count = 20;
+  return [
+    // Comic lines
+    {
+      ...makeEffect(3, {
+        len: 0.1,
+        thickness: 0.002,
+        life: 0.3,
+        color: [1, 1, 1],
+      }),
+      pos,
+      rate: "instant",
+      variance: 0.001,
+      angularVariance: 0,
+    },
+    // Chaff
+    {
+      ...makeEffect(60, {
+        len: 0.005,
+        thickness: 0.005,
+        life: 1.2,
+        color: [0.2, 0.2, 0.2],
+      }),
+      pos,
+      rate: "instant",
+      variance: 3,
+    },
+    // Fire
+    {
+      ...makeEffect(20, {
+        len: 0.005,
+        thickness: 0.003,
+        life: 0.5,
+        color: [0.7, 0.4, 0.2],
+      }),
+      pos,
+      rate: "instant",
+      variance: 5,
+    },
+    {
+      ...makeEffect(20, {
+        len: 0.005,
+        thickness: 0.003,
+        life: 0.5,
+        color: [0.7, 0.7, 0.2],
+      }),
+      pos,
+      rate: "instant",
+      variance: 5,
+    },
+    // Sparks
+    {
+      ...makeEffect(6, {
+        len: 0.07,
+        thickness: 0.003,
+        life: 0.15,
+        color: [0.7, 0.7, 0],
+      }),
+      pos,
+      rate: "instant",
+      variance: 20,
+      angularVariance: 0,
+    },
+    // Maybe also a circular shockwave or ..?
+  ];
+}
 
 export { particles };
