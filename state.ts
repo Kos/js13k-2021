@@ -10,10 +10,12 @@ type TAsteroid = {
   pos: Vec2;
   vec: Vec2;
   rotation: number;
+  rZ: number;
   color: Vec3;
   collides?: boolean;
   colliderSize: number;
   children: number[];
+  generation: number;
 };
 
 type TBullet = {
@@ -40,6 +42,7 @@ type State = {
   auraSize: number;
   cooldowns: number[];
   scheduledBullets: number[];
+  renderHitboxes?: boolean;
 };
 
 type TShip = State["ship"];
@@ -53,9 +56,11 @@ export const mutators = {
       pos: [0, 0],
       vec: [cos(x) * 4, sin(x) * 4],
       rotation: 0,
+      rZ: Math.random(),
       color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
       colliderSize: 1.6,
-      children: [4, 3, 2],
+      children: [4, 5],
+      generation: 0,
     });
   },
 };
@@ -138,9 +143,11 @@ function step(dt) {
           pos: [...a.pos],
           vec: [cos(x) * 4, sin(x) * 4],
           rotation: 0,
+          rZ: Math.random(),
           color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
           colliderSize: a.colliderSize / 2,
           children: [...children],
+          generation: a.generation + 1,
         };
       });
   });

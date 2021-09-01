@@ -4,6 +4,8 @@ import regl, { vert, frag } from "./regl";
 import REGL from "regl";
 import cubeModel from "./models/cube.json";
 import asteroidModel from "./models/asteroid.json";
+import asteroid2Model from "./models/asteroid2.json";
+import asteroid3Model from "./models/asteroid3.json";
 import leshipModel from "./models/leship.json";
 const { PI, cos, sin } = Math;
 
@@ -80,6 +82,7 @@ leshipModel.verts.forEach((vert) => {
 const models = {
   cube: preprocessModel(cubeModel),
   asteroid: preprocessModel(asteroidModel),
+  asteroid2: preprocessModel(asteroid2Model),
   leship: preprocessModel(leshipModel),
   circle: preprocessModel(makeCircle()),
   line: preprocessModel(makeLine()),
@@ -132,10 +135,20 @@ const makeMeshDrawCall = (model: ProcessedModel) =>
     },
   });
 
-const drawCube = makeMeshDrawCall(models.cube);
-const drawAsteroid = makeMeshDrawCall(models.asteroid);
-const drawLeship = makeMeshDrawCall(models.leship);
-const drawCircle = makeMeshDrawCall(models.circle);
-const drawLine = makeMeshDrawCall(models.line);
+const drawCube = makeMeshDrawCall(preprocessModel(cubeModel));
+const drawAsteroid = makeMeshDrawCall(preprocessModel(asteroidModel));
+const drawAsteroid2 = makeMeshDrawCall(preprocessModel(asteroid2Model));
+const drawAsteroid3 = makeMeshDrawCall(preprocessModel(asteroid3Model));
+const drawLeship = makeMeshDrawCall(preprocessModel(leshipModel));
+const drawCircle = makeMeshDrawCall(preprocessModel(makeCircle()));
+const drawLine = makeMeshDrawCall(preprocessModel(makeLine()));
 
-export { drawCube, drawAsteroid, drawLeship, drawCircle, drawLine };
+export {
+  drawCube,
+  drawAsteroid,
+  drawAsteroid2,
+  drawAsteroid3,
+  drawLeship,
+  drawCircle,
+  drawLine,
+};

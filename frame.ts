@@ -1,6 +1,8 @@
 import { Vec2 } from "regl";
 import {
   drawAsteroid,
+  drawAsteroid2,
+  drawAsteroid3,
   drawCircle,
   drawCube,
   drawLeship,
@@ -25,19 +27,21 @@ regl.frame((context) => {
   });
 
   state.asteroids.forEach((a) => {
-    drawAsteroid({
+    [drawAsteroid, drawAsteroid2, drawAsteroid3][a.generation]({
       translation: a.pos,
       rotation: a.rotation + state.rotation,
+      rotationZ: a.rZ * 6,
       scale: (0.1 * a.colliderSize) / 1.6,
       thickness: 0.2,
       color: a.color,
     });
-    drawCircle({
-      translation: a.pos,
-      scale: a.colliderSize / 16,
-      thickness: 0.4,
-      color: a.collides ? [1, 0, 0] : [0.2, 0.2, 0.2],
-    });
+    state.renderHitboxes &&
+      drawCircle({
+        translation: a.pos,
+        scale: a.colliderSize / 16,
+        thickness: 0.4,
+        color: a.collides ? [1, 0, 0] : [0.2, 0.2, 0.2],
+      });
   });
   state.bullets.forEach((b) => {
     drawLine({
@@ -57,12 +61,13 @@ regl.frame((context) => {
     thickness: lerp(0.4, 0.2, (Date.now() % 600) / 600),
     color: [0.2, 0.2, 1],
   });
-  drawCircle({
-    translation: state.ship.pos,
-    scale: state.ship.colliderSize / 16,
-    thickness: 0.4,
-    color: state.ship.collides ? [1, 0, 0] : [0.2, 0.2, 0.2],
-  });
+  state.renderHitboxes &&
+    drawCircle({
+      translation: state.ship.pos,
+      scale: state.ship.colliderSize / 16,
+      thickness: 0.4,
+      color: state.ship.collides ? [1, 0, 0] : [0.2, 0.2, 0.2],
+    });
   if (state.ship.aura) {
     const auraThickness = 3 * (0.6 - state.ship.aura);
     drawCircle({
