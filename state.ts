@@ -38,6 +38,7 @@ type State = {
     collides?: boolean;
     colliderSize: number;
     aura: number;
+    hitTimer: number;
   };
   auraSize: number;
   cooldowns: number[];
@@ -78,6 +79,7 @@ const state: State = {
     angle: 1,
     colliderSize: 0.5,
     aura: 0,
+    hitTimer: 0,
   },
   auraSize: 5,
   cooldowns: [0, 0, 0],
@@ -103,7 +105,9 @@ function step(dt) {
     wraparound(a.pos);
     a.rotation += dt;
     a.collides = false;
-    collide(a, state.ship, state.ship.colliderSize);
+    if (state.ship.hitTimer === 0) {
+      collide(a, state.ship, state.ship.colliderSize);
+    }
     if (state.ship.aura) {
       collideAura(a, state.ship, state.ship.aura);
     }
@@ -161,6 +165,11 @@ function updateShip(s: TShip, dt: number) {
   const sens = 4;
   const accel = 48;
   s.angle += (input.right - input.left) * sens * dt;
+  if (s.collides) {
+    s.hitTimer = 1.2;
+  } else {
+    s.hitTimer = Math.max(0, s.hitTimer - dt);
+  }
   const si = sin(s.angle),
     co = cos(s.angle);
   if (input.thrust) {
@@ -207,13 +216,15 @@ function updateShip(s: TShip, dt: number) {
   }
 
   state.cooldowns = state.cooldowns.map((x) => Math.max(0, x - dt));
-  if (input.skill1 && state.cooldowns[0] === 0) {
-    state.cooldowns[0] = 0.6 * 4;
-    state.scheduledBullets.push(0.15, 0.3, 0.45, 0.6, 0.75);
-  }
-  if (input.skill2 && state.cooldowns[1] === 0) {
-    state.cooldowns[1] = 0.6 * 8;
-    state.ship.aura = 0.1;
+  if (!state.ship.hitTimer) {
+    if (input.skill1 && state.cooldowns[0] === 0) {
+      state.cooldowns[0] = 0.6 * 4;
+      state.scheduledBullets.push(0.15, 0.3, 0.45, 0.6, 0.75);
+    }
+    if (input.skill2 && state.cooldowns[1] === 0) {
+      state.cooldowns[1] = 0.6 * 8;
+      state.ship.aura = 0.1;
+    }
   }
 }
 const sq = (a) => a * a;

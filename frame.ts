@@ -55,6 +55,9 @@ regl.frame((context) => {
 
   drawLeship({
     translation: state.ship.pos,
+    rotation: state.ship.hitTimer
+      ? Math.pow(state.ship.hitTimer / 1.2, 3) * 7
+      : 0,
     rotationY: state.ship.thrust,
     rotationZ: state.ship.angle,
     scale: 0.05,
