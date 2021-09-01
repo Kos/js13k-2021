@@ -59,7 +59,7 @@ export const mutators = {
       rZ: Math.random(),
       color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
       colliderSize: 1.6,
-      children: [4, 5],
+      children: [4, 3],
       generation: 0,
     });
   },
