@@ -121,7 +121,7 @@ export type Uniforms = {
   LifeMax: number;
 };
 
-export function regl2<TU, TA, TP>({
+function myRegl<TU, TA, TP>({
   attributes,
   uniforms,
   elements,
@@ -217,8 +217,8 @@ export function regl2<TU, TA, TP>({
   };
 }
 
-regl2.buffer = buffer;
-regl2.elements = elements;
-regl2.frame = frame;
-regl2.clear = clear;
-export default regl2;
+myRegl.buffer = buffer;
+myRegl.elements = elements;
+myRegl.frame = frame;
+myRegl.clear = clear;
+export default myRegl;

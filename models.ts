@@ -1,7 +1,5 @@
 import type { Vec2, Vec3 } from "regl";
-// import regl, { vert, frag, Uniforms } from "./regl";
-import { regl2, vert, frag, Uniforms } from "./regl";
-const regl = regl2;
+import regl, { vert, frag, Uniforms } from "./regl";
 
 import cubeModel from "./models/cube.json";
 import asteroidModel from "./models/asteroid.json";

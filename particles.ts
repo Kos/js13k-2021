@@ -1,8 +1,7 @@
 // particle system?
 
-import REGL, { Vec2 } from "regl";
-import { regl2, vert, frag } from "./regl";
-const regl = regl2;
+import type { Vec2, Vec3 } from "regl";
+import regl, { vert, frag } from "./regl";
 const { cos, sin, random } = Math;
 export type TParticleEffect = {
   // How particles should be emitted and updated
@@ -56,17 +55,17 @@ particles should be rendered as lines to keep the theme going, we can roll far w
 
 type Props = {
   aliveParticles: number;
-  translation: REGL.Vec2;
+  translation: Vec2;
   rotation: number;
   thickness: number;
   scale: number;
-  color: REGL.Vec3;
+  color: Vec3;
 };
 
 type TParticleState = {
   life: number;
-  pos: REGL.Vec3;
-  vec: REGL.Vec3;
+  pos: Vec3;
+  vec: Vec3;
   angle: number;
   angular: number;
   cos: number;
