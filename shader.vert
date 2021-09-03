@@ -11,7 +11,6 @@ uniform float RotationY;
 uniform float RotationZ;
 uniform float Thickness;
 uniform float Scale;
-uniform float Aspect;
 uniform vec3 Color;
 
 varying float VBar;
@@ -44,6 +43,7 @@ vec3 rotate(vec3 v, vec3 axis, float angle) {
 
 void main() {
     float depthMultiplier = 6.0;
+    float Aspect = 16./9.;
     
     // MODEL SPACE
 

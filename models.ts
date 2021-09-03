@@ -1,7 +1,8 @@
 import type { Vec2, Vec3 } from "regl";
-import regl, { vert, frag } from "./regl";
+// import regl, { vert, frag, Uniforms } from "./regl";
+import { regl2, vert, frag, Uniforms } from "./regl";
+const regl = regl2;
 
-import REGL from "regl";
 import cubeModel from "./models/cube.json";
 import asteroidModel from "./models/asteroid.json";
 import asteroid2Model from "./models/asteroid2.json";
@@ -36,8 +37,8 @@ function preprocessModel(m: Model) {
     Elements.push(i + 2, i + 1, i + 3);
   }
   return {
-    Position: regl.buffer(Position),
-    Normal: regl.buffer(Normal),
+    Position: regl.buffer(Position.flatMap((x) => x)),
+    Normal: regl.buffer(Normal.flatMap((x) => x)),
     Side: regl.buffer(Side),
     Elements: regl.elements(Elements),
   };
@@ -88,26 +89,14 @@ const models = {
   line: preprocessModel(makeLine()),
 };
 
-type Uniforms = {
-  Translation: REGL.Vec2;
-  Rotation: number;
-  RotationY: number;
-  RotationZ: number;
-  Thickness: number;
-  Scale: number;
-  Aspect: number;
-  Color: REGL.Vec3;
-  LifeMax: number;
-};
-
-type Props = {
-  translation: REGL.Vec2;
+export type Props = {
+  translation: Vec2;
   rotation: number;
   rotationY: number;
   rotationZ: number;
   thickness: number;
   scale: number;
-  color: REGL.Vec3;
+  color: Vec3;
 };
 
 const makeMeshDrawCall = (model: ProcessedModel) =>
@@ -126,12 +115,11 @@ const makeMeshDrawCall = (model: ProcessedModel) =>
       Rotation: (context, props) => props.rotation || 0,
       RotationY: (context, props) => props.rotationY || 0,
       RotationZ: (context, props) => props.rotationZ || 0,
-      Aspect: (context) => context.viewportWidth / context.viewportHeight,
       Translation: (context, props) => props.translation,
       Thickness: (context, props) => props.thickness * 0.01 || 0.01,
       Scale: (context, props) => props.scale || 0.5,
       Color: (context, props) => props.color || [1, 1, 0],
-      LifeMax: 1,
+      LifeMax: () => 1,
     },
   });
 

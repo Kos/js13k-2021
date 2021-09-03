@@ -1,7 +1,8 @@
 // particle system?
 
 import REGL, { Vec2 } from "regl";
-import regl, { vert, frag } from "./regl";
+import { regl2, vert, frag } from "./regl";
+const regl = regl2;
 const { cos, sin, random } = Math;
 export type TParticleEffect = {
   // How particles should be emitted and updated
@@ -139,15 +140,14 @@ function makeEffect(
     elements: buffers.elements,
     count: (context, props) => props.aliveParticles * 6,
     uniforms: {
-      Rotation: 0,
-      RotationY: 0,
-      RotationZ: 0,
-      Aspect: (context) => context.viewportWidth / context.viewportHeight,
+      Rotation: () => 0,
+      RotationY: () => 0,
+      RotationZ: () => 0,
       Translation: (context, props) => props.translation || [0, 0],
       Thickness: (context, props) => settings.thickness,
-      Scale: 1,
-      Color: settings.color,
-      LifeMax: settings.life,
+      Scale: () => 1,
+      Color: () => settings.color,
+      LifeMax: () => settings.life,
     },
     depth: {
       enable: false,
@@ -227,29 +227,33 @@ function makeEffect(
       const alive = particles.filter((a) => a.life > 0);
 
       buffers.position.subdata(
-        alive.flatMap(({ pos, cos, sin }) => {
-          const pos1 = [
-            pos[0] / 16 - len * cos,
-            pos[1] / 16 - len * sin,
-            pos[2],
-          ];
-          const pos2 = [
-            pos[0] / 16 + len * cos,
-            pos[1] / 16 + len * sin,
-            pos[2],
-          ];
-          return [pos1, pos1, pos2, pos2];
-        })
+        alive
+          .flatMap(({ pos, cos, sin }) => {
+            const pos1 = [
+              pos[0] / 16 - len * cos,
+              pos[1] / 16 - len * sin,
+              pos[2],
+            ];
+            const pos2 = [
+              pos[0] / 16 + len * cos,
+              pos[1] / 16 + len * sin,
+              pos[2],
+            ];
+            return [pos1, pos1, pos2, pos2];
+          })
+          .flat()
       );
       buffers.normal.subdata(
-        alive.flatMap(({ cos, sin }) => {
-          return [
-            [cos, sin, 0],
-            [cos, sin, 0],
-            [cos, sin, 0],
-            [cos, sin, 0],
-          ];
-        })
+        alive
+          .flatMap(({ cos, sin }) => {
+            return [
+              [cos, sin, 0],
+              [cos, sin, 0],
+              [cos, sin, 0],
+              [cos, sin, 0],
+            ];
+          })
+          .flat()
       );
       buffers.life.subdata(
         alive.flatMap((p) => [p.life, p.life, p.life, p.life])

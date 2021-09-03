@@ -1,4 +1,3 @@
-import { Vec2 } from "regl";
 import {
   drawAsteroid,
   drawAsteroid2,
