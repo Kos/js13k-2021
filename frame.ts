@@ -11,6 +11,7 @@ import regl from "./regl";
 import { shipParticles, state, step } from "./state";
 import { particles } from "./particles";
 import lerp from "./lerp";
+import { currentBeatFraction } from "./audio";
 
 let prevTime = null;
 
@@ -61,7 +62,8 @@ regl.frame((context) => {
     rotationY: state.ship.thrust,
     rotationZ: state.ship.angle,
     scale: 0.05,
-    thickness: lerp(0.4, 0.2, (Date.now() % 600) / 600),
+    // thickness: lerp(0.4, 0.2, (Date.now() % 600) / 600),
+    thickness: lerp(0.5, 0.1, currentBeatFraction()),
     color: [0.2, 0.2, 1],
   });
   state.renderHitboxes &&

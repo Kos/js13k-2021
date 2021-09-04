@@ -1,4 +1,5 @@
 import { Vec2, Vec3 } from "regl";
+import { playQ, playW } from "./audio";
 import input from "./input";
 import {
   makeExhaust,
@@ -223,16 +224,18 @@ function updateShip(s: TShip, dt: number) {
   state.cooldowns = state.cooldowns.map((x) => Math.max(0, x - dt));
   if (!state.ship.hitTimer) {
     if (input.skill1 && state.cooldowns[0] === 0) {
-      state.cooldowns[0] = 0.6 * 4;
+      playQ();
+      state.cooldowns[0] = 0.6 * 4 - 0.2;
       state.scheduledBullets.push(0.15, 0.3, 0.45, 0.6, 0.75);
     }
     if (input.skill2 && state.cooldowns[1] === 0) {
-      state.cooldowns[1] = 0.6 * 8;
+      playW();
+      state.cooldowns[1] = 0.6 * 8 - 0.2;
       state.ship.aura = 0.1;
     }
   }
 }
-const sq = (a) => a * a;
+const sq = (a: number) => a * a;
 
 function collide(
   a: TAsteroid,

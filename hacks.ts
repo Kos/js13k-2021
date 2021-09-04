@@ -1,6 +1,6 @@
 // Hacks - remove later
 
-import { source } from "./audio";
+import { playBGM } from "./audio";
 import { makeExplosion, particles } from "./particles";
 import { mutators, state } from "./state";
 
@@ -15,7 +15,7 @@ window.addEventListener("keypress", (e) => {
     particles.push(...makeExplosion([-3, 4]));
   }
   if (e.key === "M") {
-    source.start();
+    playBGM();
   }
 });
 

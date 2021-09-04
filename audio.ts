@@ -1,17 +1,93 @@
 import CPlayer from "./player-small";
+import song from "./song";
+
+type TSong = typeof song;
 
 const ac = new AudioContext();
 
-// Demo song from https://sb.bitsnbites.eu/demo.html
-// to be replaced with something worse but my own
-// prettier-ignore
-var song={songData:[{i:[2,192,128,0,2,192,128,3,0,0,32,222,60,0,0,0,2,188,3,1,3,55,241,60,67,53,5,75,5],p:[1,2,3,4,3,4],c:[{n:[123],f:[]},{n:[118],f:[]},{n:[123,111],f:[]},{n:[118,106],f:[]}]},{i:[3,100,128,0,3,201,128,7,0,0,17,43,109,0,0,0,3,113,4,1,1,23,184,2,29,147,6,67,3],p:[,,1,2,1,2],c:[{n:[123,,,,,,,,123,,,,,,,,123,,,,,,,,123,,,,,,,,126,,,,,,,,126,,,,,,,,126,,,,,,,,126,,,,,,,,130,,,,,,,,130,,,,,,,,130,,,,,,,,130],f:[]},{n:[122,,,,,,,,122,,,,,,,,122,,,,,,,,122,,,,,,,,125,,,,,,,,125,,,,,,,,125,,,,,,,,125,,,,,,,,130,,,,,,,,130,,,,,,,,130,,,,,,,,130],f:[]}]},{i:[0,192,99,64,0,80,99,0,0,3,4,0,66,0,0,0,0,19,4,1,2,86,241,18,195,37,4,0,0],p:[,,1,1,1,1,1],c:[{n:[147,,,,147,,,,147,,,,147,,,,147,,,,147,,,,147,,,,147],f:[]}]},{i:[2,146,140,0,2,224,128,3,0,0,84,0,95,0,0,0,3,179,5,1,2,62,135,11,15,150,3,157,6],p:[,,,,1,2],c:[{n:[147,,145,,147,,,,,,,,,,,,135],f:[11,,,,,,,,,,,,,,,,11,,,,,,,,,,,,,,,,27,,,,,,,,,,,,,,,,84]},{n:[142,,140,,142,,,,,,,,,,,,130],f:[11,,,,,,,,,,,,,,,,11,,,,,,,,,,,,,,,,27,,,,,,,,,,,,,,,,84]}]}],rowLen:6615,patternLen:32,endPattern:6,numChannels:4};
+const bgm: TSong = {
+  ...song,
+  songData: song.songData.slice(0, 3),
+  numChannels: 3,
+};
 
-const p = CPlayer();
-p.init(song);
-while (p.generate() < 1);
-const source = ac.createBufferSource();
-source.buffer = p.createAudioBuffer(ac);
-source.connect(ac.destination);
+function getFirstIndex({ endPattern }: TSong, instrument: number) {
+  for (let px = 0; px <= endPattern; ++px) {
+    if (song.songData[instrument].p[px]) {
+      return px;
+    }
+  }
+  // throw new Error("Failed to find first pattern");
+}
+
+function trimEffect(song: TSong, instrument: number): TSong {
+  const fx = getFirstIndex(song, instrument);
+  const { i, p, c } = song.songData[instrument];
+  return {
+    ...song,
+    songData: [
+      {
+        i,
+        p: p.slice(fx, fx + 1),
+        c,
+      },
+    ],
+    numChannels: 1,
+    endPattern: 1,
+  };
+}
+
+function toBuffer(song: TSong): AudioBuffer {
+  const p = CPlayer();
+  p.init(song);
+  while (p.generate() < 1);
+  return p.createAudioBuffer(ac);
+}
+
+function toSource(buffer: AudioBuffer) {
+  const source = ac.createBufferSource();
+  source.buffer = buffer;
+  source.connect(ac.destination);
+  return source;
+}
+
+const bpm = 100;
+const secondsPerBeat = 60 / bpm;
+
+export function currentBeatFraction(divisor: number = 1): number {
+  const { currentTime } = ac;
+  const sbb = secondsPerBeat / divisor;
+
+  const beatsSoFar = 0 | (currentTime / sbb);
+  const lastBeatTime = beatsSoFar * sbb;
+  const timeIntoNextBeat = currentTime - lastBeatTime;
+  return timeIntoNextBeat / sbb;
+}
+
+export function nextBeat(divisor: number = 1): number {
+  const frac = currentBeatFraction(divisor);
+  const remainingFrac = frac ? 1 - frac : 0;
+  const nextBeat = ac.currentTime + remainingFrac * secondsPerBeat;
+  console.log({
+    currentTime: ac.currentTime,
+    nextBeat: nextBeat,
+    delta: nextBeat - ac.currentTime,
+  });
+  return nextBeat;
+}
+
+function play(song: TSong, loop: boolean = false, divisor: number = 1) {
+  const buf = toBuffer(song);
+  return () => {
+    const source = toSource(buf);
+    source.loop = loop;
+    source.start(nextBeat(divisor));
+  };
+}
+
+const playBGM = play(bgm, true);
+const playQ = play(trimEffect(song, 6), false, 1);
+const playW = play(trimEffect(song, 3), false, 1);
+
 // source.start();
-export { source };
+export { playBGM, playQ, playW };
