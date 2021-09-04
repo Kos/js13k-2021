@@ -58,8 +58,9 @@ type TShip = State["ship"];
 export const mutators = {
   newAsteroid() {
     const x = random() * 3.14 * 2;
+    const t = random() * 3.14 * 2;
     state.asteroids.push({
-      pos: [0, 0],
+      pos: [cos(t) * 16, sin(t) * 9],
       vec: [cos(x) * 4, sin(x) * 4],
       rotation: 0,
       rZ: Math.random(),

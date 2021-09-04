@@ -89,5 +89,5 @@ const playBGM = play(bgm, true);
 const playQ = play(trimEffect(song, 6), false, 1);
 const playW = play(trimEffect(song, 3), false, 1);
 
-// source.start();
 export { playBGM, playQ, playW };
+playBGM();

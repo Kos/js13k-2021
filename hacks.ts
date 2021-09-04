@@ -15,7 +15,7 @@ window.addEventListener("keypress", (e) => {
     particles.push(...makeExplosion([-3, 4]));
   }
   if (e.key === "M") {
-    playBGM();
+    // playBGM();
   }
 });
 
