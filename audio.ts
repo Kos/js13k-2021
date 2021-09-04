@@ -7,8 +7,8 @@ const ac = new AudioContext();
 
 const bgm: TSong = {
   ...song,
-  songData: song.songData.slice(0, 3),
-  numChannels: 3,
+  songData: song.songData.slice(0, 5),
+  numChannels: 5,
 };
 
 function getFirstIndex({ endPattern }: TSong, instrument: number) {
@@ -87,7 +87,7 @@ function play(song: TSong, loop: boolean = false, divisor: number = 1) {
 
 const playBGM = play(bgm, true);
 const playQ = play(trimEffect(song, 6), false, 1);
-const playW = play(trimEffect(song, 3), false, 1);
+const playW = play(trimEffect(song, 7), false, 1);
 
 export { playBGM, playQ, playW };
 playBGM();
