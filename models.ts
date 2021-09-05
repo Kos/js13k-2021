@@ -8,12 +8,12 @@ import asteroid3Model from "./models/asteroid3.json";
 import leshipModel from "./models/leship.json";
 const { PI, cos, sin } = Math;
 
-type Model = {
+export type TModel = {
   verts: number[][];
   elements: number[][];
 };
 
-function preprocessModel(m: Model) {
+export function preprocessModel(m: TModel) {
   // Explode indexing
   const PositionSingle: number[][] = m.elements.flatMap(([a, b]) => [
     m.verts[a],
@@ -42,7 +42,7 @@ function preprocessModel(m: Model) {
   };
 }
 
-function makeCircle(): Model {
+function makeCircle(): TModel {
   const count = 40;
   const verts = [];
   const elements = [];
@@ -53,14 +53,13 @@ function makeCircle(): Model {
   }
   elements[elements.length - 1][1] = 0;
 
-  console.log({ verts, elements });
   return {
     verts,
     elements,
   };
 }
 
-function makeLine(): Model {
+function makeLine(): TModel {
   return {
     verts: [
       [0, 0, 0],
@@ -78,15 +77,6 @@ leshipModel.verts.forEach((vert) => {
   vert[1] -= 0.8;
 });
 
-const models = {
-  cube: preprocessModel(cubeModel),
-  asteroid: preprocessModel(asteroidModel),
-  asteroid2: preprocessModel(asteroid2Model),
-  leship: preprocessModel(leshipModel),
-  circle: preprocessModel(makeCircle()),
-  line: preprocessModel(makeLine()),
-};
-
 export type Props = {
   translation: Vec2;
   rotation: number;
@@ -97,8 +87,8 @@ export type Props = {
   color: Vec3;
 };
 
-const makeMeshDrawCall = (model: ProcessedModel) =>
-  regl<Uniforms, {}, Props>({
+export function makeMeshDrawCall(model: ProcessedModel) {
+  return regl<Uniforms, {}, Props>({
     vert,
     frag,
     primitive: "triangles",
@@ -120,6 +110,7 @@ const makeMeshDrawCall = (model: ProcessedModel) =>
       LifeMax: () => 1,
     },
   });
+}
 
 const drawCube = makeMeshDrawCall(preprocessModel(cubeModel));
 const drawAsteroid = makeMeshDrawCall(preprocessModel(asteroidModel));

@@ -12,8 +12,11 @@ import { shipParticles, state, step } from "./state";
 import { particles } from "./particles";
 import lerp from "./lerp";
 import { currentBeatFraction } from "./audio";
+import { makeTextDrawcall } from "./text";
 
 let prevTime = null;
+
+const hello = makeTextDrawcall("qwertyuiopasdfghjklzxcvbnm");
 
 regl.frame((context) => {
   const dt = context.time - (prevTime || context.time);
@@ -90,6 +93,13 @@ regl.frame((context) => {
       });
     });
   }
+
+  hello({
+    translation: [0, 0],
+    scale: 0.01,
+    thickness: 0.2,
+    color: [1, 1, 1],
+  });
 
   // Poor man's coordinate system
   // const cubes: Vec2[] = [

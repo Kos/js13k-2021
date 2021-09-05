@@ -68,11 +68,6 @@ export function nextBeat(divisor: number = 1): number {
   const frac = currentBeatFraction(divisor);
   const remainingFrac = frac ? 1 - frac : 0;
   const nextBeat = ac.currentTime + remainingFrac * secondsPerBeat;
-  console.log({
-    currentTime: ac.currentTime,
-    nextBeat: nextBeat,
-    delta: nextBeat - ac.currentTime,
-  });
   return nextBeat;
 }
 
