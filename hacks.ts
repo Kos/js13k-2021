@@ -2,11 +2,11 @@
 
 import { playBGM } from "./audio";
 import { makeExplosion, particles } from "./particles";
-import { mutators, state } from "./state";
+import { newAsteroid, state, titleScreen } from "./state";
 
 window.addEventListener("keypress", (e) => {
   if (e.key === "a") {
-    mutators.newAsteroid();
+    newAsteroid();
   }
   if (e.key === "A") {
     state.asteroids = [];
@@ -14,11 +14,11 @@ window.addEventListener("keypress", (e) => {
   if (e.key === "P") {
     particles.push(...makeExplosion([-3, 4]));
   }
-  if (e.key === "M") {
-    // playBGM();
+  if (e.key === "T") {
+    titleScreen();
   }
 });
 
 if (state.asteroids.length === 0) {
-  mutators.newAsteroid();
+  newAsteroid();
 }

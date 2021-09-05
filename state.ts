@@ -32,6 +32,7 @@ type TBullet = {
 };
 
 type State = {
+  title: boolean;
   rotation: number;
   asteroids: TAsteroid[];
   bullets: TBullet[];
@@ -55,26 +56,51 @@ type TShip = State["ship"];
 
 // mutators
 
-export const mutators = {
-  newAsteroid() {
-    const x = random() * 3.14 * 2;
-    const t = random() * 3.14 * 2;
-    state.asteroids.push({
-      pos: [cos(t) * 16, sin(t) * 9],
-      vec: [cos(x) * 4, sin(x) * 4],
+export function newAsteroid() {
+  const x = random() * 3.14 * 2;
+  const t = random() * 3.14 * 2;
+  state.asteroids.push({
+    pos: [cos(t) * 16, sin(t) * 9],
+    vec: [cos(x) * 4, sin(x) * 4],
+    rotation: 0,
+    rZ: Math.random(),
+    color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
+    colliderSize: 1.6,
+    children: [4, 3],
+    generation: 0,
+  });
+}
+
+export function titleScreen() {
+  state.title = true;
+  state.asteroids = [
+    {
+      pos: [-11, 2],
+      vec: [0, 0],
       rotation: 0,
       rZ: Math.random(),
       color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
-      colliderSize: 1.6,
-      children: [4, 3],
+      colliderSize: 2.6,
+      children: [],
       generation: 0,
-    });
-  },
-};
+    },
+    {
+      pos: [11, 2],
+      vec: [0, 0],
+      rotation: 0,
+      rZ: Math.random(),
+      color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
+      colliderSize: 2.6,
+      children: [],
+      generation: 0,
+    },
+  ];
+}
 
 // initial state
 
 const state: State = {
+  title: true,
   asteroids: [],
   bullets: [],
   rotation: 0,
@@ -103,6 +129,10 @@ window.onbeforeunload = () => {
 
 function step(dt) {
   state.rotation += dt;
+  if (state.title) {
+    // ...
+    return;
+  }
 
   state.ship.collides = false;
   state.asteroids.forEach((a) => {
