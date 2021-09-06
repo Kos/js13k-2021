@@ -51,6 +51,30 @@ regl.frame((context) => {
         color: a.collides ? [1, 0, 0] : [0.2, 0.2, 0.2],
       });
   });
+
+  state.mines.forEach((e) => {
+    drawMine({
+      translation: e.pos,
+      scale: 0.05,
+      thickness: 0.2,
+      rotationY:
+        state.rotation * 2 + Math.pow(2, 1.2 - Math.min(e.life, 1.2) + 1) * 4,
+      color: [0.3, 0, 0],
+    });
+    (e.life > 1.2 ? drawEye2 : drawEye)({
+      translation: e.pos,
+      scale: 0.008,
+      thickness: 0.2,
+      color: [1, 0, 0],
+    });
+    drawCircle({
+      translation: e.pos,
+      scale: e.colliderSize / 16,
+      thickness: 0.2,
+      color: [0.3, 0, 0],
+    });
+  });
+
   state.bullets.forEach((b) => {
     drawLine({
       translation: b.pos,
@@ -125,20 +149,6 @@ regl.frame((context) => {
       });
     }
   }
-
-  drawMine({
-    translation: [0, -3],
-    scale: 0.05,
-    thickness: 0.2,
-    rotationY: state.rotation,
-    color: [0.3, 0, 0],
-  });
-  (currentBeatFraction() < 0.8 ? drawEye : drawEye2)({
-    translation: [0, -3],
-    scale: 0.008,
-    thickness: 0.2,
-    color: [1, 0, 0],
-  });
 
   // Poor man's coordinate system
   // const cubes: Vec2[] = [

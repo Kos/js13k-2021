@@ -31,6 +31,14 @@ type TBullet = {
   collides?: boolean;
 };
 
+type TMine = {
+  pos: Vec2;
+  vec: Vec2;
+  life: number;
+  collides?: boolean;
+  colliderSize: number;
+};
+
 type State = {
   title: boolean;
   rotation: number;
@@ -50,6 +58,7 @@ type State = {
   cooldowns: number[];
   scheduledBullets: number[];
   renderHitboxes?: boolean;
+  mines: TMine[];
 };
 
 type TShip = State["ship"];
@@ -68,6 +77,15 @@ export function newAsteroid() {
     colliderSize: 1.6,
     children: [4, 3],
     generation: 0,
+  });
+}
+
+export function newMine() {
+  state.mines.push({
+    pos: [0, -2],
+    vec: [0, 0],
+    colliderSize: 0.5,
+    life: 3,
   });
 }
 
@@ -116,6 +134,7 @@ const state: State = {
   auraSize: 5,
   cooldowns: [0, 0, 0],
   scheduledBullets: [],
+  mines: [],
 };
 
 // save state on refresh
@@ -159,11 +178,14 @@ function step(dt) {
     return [];
   });
   // O(n^2) party [INSERT QUADTREE HERE]
-  state.bullets.forEach((b) =>
+  state.bullets.forEach((b) => {
     state.asteroids.forEach((a) => {
       collide(a, b, 0);
-    })
-  );
+    });
+    state.mines.forEach((a) => {
+      collide(a, b, 0);
+    });
+  });
   // end O(N^2) party
 
   state.asteroids = state.asteroids.flatMap((a) => {
@@ -191,6 +213,18 @@ function step(dt) {
           generation: a.generation + 1,
         };
       });
+  });
+
+  state.mines = state.mines.flatMap((m) => {
+    m.life -= dt;
+    collide(m, state.ship, state.ship.colliderSize);
+    if (m.life > 0 && !m.collides) {
+      return [m];
+    } else {
+      if (particles.length < 20) particles.push(...makeExplosion(m.pos));
+      // spawn bullets
+      return [];
+    }
   });
 
   updateShip(state.ship, dt);
@@ -269,7 +303,7 @@ function updateShip(s: TShip, dt: number) {
 const sq = (a: number) => a * a;
 
 function collide(
-  a: TAsteroid,
+  a: { pos: Vec2; colliderSize: number; collides?: boolean },
   s: { pos: Vec2; collides?: boolean },
   colliderSize: number
 ) {
