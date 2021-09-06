@@ -15,12 +15,27 @@ import { shipParticles, state, step } from "./state";
 import { particles } from "./particles";
 import { currentBeatFraction } from "./audio";
 import { makeTextDrawcall } from "./text";
-import { min, pow, sin, TAU, lerp } from "./math";
+import { min, pow, sin, TAU, lerp, max } from "./math";
 
 let prevTime = null;
 
 // const hello = makeTextDrawcall("qwertyuiopasdfghjklzxcvbnm");
-const texts = [makeTextDrawcall("beat"), makeTextDrawcall("rocks")];
+const texts = [
+  "beat", // 0
+  "rocks",
+  "tap or press Q to start",
+  "mind the rhythm",
+  "level 1/6\nwarm up the engines", // 4
+  "level 2/6\nmy house is full of traps",
+  "level 3/6\nclever naming",
+  "level 4/6\nmagicland dizzy",
+  "level 5/6\nminefield mahjong",
+  "level 6/6\nseason finale",
+  "well done", // 10
+  "excellent",
+  "astounding",
+  "astoneding",
+].map(makeTextDrawcall);
 
 regl.frame((context) => {
   const dt = context.time - (prevTime || context.time);
@@ -118,6 +133,18 @@ regl.frame((context) => {
       thickness: lerp(0.9, 0.3, currentBeatFraction()),
       rotationY,
     });
+    texts[2]({
+      translation: [0, -6],
+      scale: 0.008,
+      color: [0.5, 0.5, 0.5],
+      thickness: 0.3,
+    });
+    texts[3]({
+      translation: [0, -8],
+      scale: 0.008,
+      color: [0.5, 0.5, 0.5],
+      thickness: 0.3,
+    });
   } else {
     drawLeship({
       translation: state.ship.pos,
@@ -187,7 +214,20 @@ regl.frame((context) => {
   });
   shipParticles && shipParticles.render();
 
-  if (!state.title)
+  state.signs.forEach((s) => {
+    const a = max(0, -s.life + 1);
+    const f = pow(a, 3) * 30;
+    texts[s.index]({
+      translation: s.pos,
+      color: [1 - a, 1 - a, 1 - a],
+      scale: 0.004,
+      thickness: 0.2,
+      rotation: f,
+    });
+  });
+
+  // hud
+  if (!state.title) {
     [-1, 0, 1].forEach((x, i) => {
       drawCube({
         translation: [x * 2, -8],
@@ -196,4 +236,5 @@ regl.frame((context) => {
         color: state.cooldowns[i] > 0 ? [0.1, 0.1, 0.1] : [0.7, 0.7, 0.7],
       });
     });
+  }
 });

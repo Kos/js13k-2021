@@ -81,7 +81,6 @@ function makeMine(): TModel {
       elements.push([l - 2, l - 1]);
     }
   }
-  console.log(verts, elements);
   return { verts, elements };
 }
 

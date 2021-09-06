@@ -36,7 +36,7 @@ const font: Record<string, number[][]> = {
   P: [[-2, 0, -2, 9, 1, 9, 2, 8, 2, 6, 0, 5, -2, 5]],
   Q: [
     [-2, 2, -2, 7, -1, 9, 1, 9, 2, 7, 2, 2, 1, 0, -1, 0, -2, 2],
-    [0, 1, 2, 0],
+    [0, 2, 3, 0],
   ],
   R: [[-2, 0, -2, 9, 1, 9, 2, 8, 2, 6, 0, 5, -2, 5, 2, 0]],
   S: [[2, 8, 1, 9, -1, 9, -2, 7, 2, 3, 2, 2, 1, 0, -1, 0, -2, 2]],
@@ -72,15 +72,20 @@ function makeTextModel(text: string): TModel {
   const verts: number[][] = [],
     elements: number[][] = [];
   let caret = 0;
+  let dy = 0;
   for (const letter of text.toUpperCase()) {
     const dx = caret;
     caret += 5.5;
+    if (letter === "\n") {
+      caret = 0;
+      dy -= 11;
+    }
     const glyph = font[letter];
     if (!glyph) continue;
     glyph.forEach((stroke) => {
       for (let i = 0; i < stroke.length; i += 2) {
         // add vertex
-        verts.push([stroke[i] + dx, stroke[i + 1], 0]);
+        verts.push([stroke[i] + dx, stroke[i + 1] + dy, 0]);
         // if second or further vertex, add element pair
         if (i) {
           elements.push([verts.length - 2, verts.length - 1]);

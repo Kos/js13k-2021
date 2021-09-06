@@ -30,6 +30,12 @@ export type TBullet = {
   collides?: boolean;
 };
 
+type TSign = {
+  pos: Vec2;
+  life: number;
+  index: number;
+};
+
 type TMine = {
   pos: Vec2;
   vec: Vec2;
@@ -39,8 +45,9 @@ type TMine = {
   colliderSize: number;
 };
 
-type State = {
+type TState = {
   title: boolean;
+  level: number;
   rotation: number;
   asteroids: TAsteroid[];
   bullets: TBullet[];
@@ -60,11 +67,13 @@ type State = {
   scheduledBullets: number[];
   renderHitboxes?: boolean;
   mines: TMine[];
+  signs: TSign[];
+  win: number;
 };
 
-type TShip = State["ship"];
+type TShip = TState["ship"];
 
-// mutators
+// mutator
 
 export function newAsteroid() {
   const x = random() * 3.14 * 2;
@@ -81,54 +90,78 @@ export function newAsteroid() {
   });
 }
 
+function baseState(): TState {
+  return {
+    title: false,
+    level: 0,
+    asteroids: [],
+    bullets: [],
+    enemyBullets: [],
+    rotation: 0,
+    ship: {
+      pos: [0, 0],
+      vec: [0, 0],
+      thrust: 0,
+      angle: 1,
+      colliderSize: 0.5,
+      aura: 0,
+      hitTimer: 0,
+    },
+    auraSize: 5,
+    cooldowns: [0, 0, 0],
+    scheduledBullets: [],
+    mines: [],
+    signs: [],
+    win: 0,
+  };
+}
 export function titleScreen() {
-  state.title = true;
-  state.asteroids = [
-    {
-      pos: [-11, 2],
-      vec: [0, 0],
-      rotation: 0,
-      rZ: random(),
-      color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
-      colliderSize: 2.6,
-      children: [],
-      generation: 0,
-    },
-    {
-      pos: [11, 2],
-      vec: [0, 0],
-      rotation: 0,
-      rZ: random(),
-      color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
-      colliderSize: 2.6,
-      children: [],
-      generation: 0,
-    },
-  ];
+  Object.assign(state, {
+    ...baseState(),
+    title: true,
+    asteroids: [
+      {
+        pos: [-11, 2],
+        vec: [0, 0],
+        rotation: 0,
+        rZ: random(),
+        color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
+        colliderSize: 2.6,
+        children: [],
+        generation: 0,
+      },
+      {
+        pos: [11, 2],
+        vec: [0, 0],
+        rotation: 0,
+        rZ: random(),
+        color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
+        colliderSize: 2.6,
+        children: [],
+        generation: 0,
+      },
+    ],
+    win: 0,
+  });
+}
+
+export function setLevel(n: number = 0) {
+  state.title = false;
+  state.level = n;
+  state.asteroids = [];
+  state.win = 0;
+  state.signs.push({
+    index: n + 4,
+    life: 2,
+    pos: [0, 0],
+  });
+  const c = [1, 2, 2, 3, 3, 3][n];
+  for (let i = 0; i < c; ++i) newAsteroid();
 }
 
 // initial state
 
-const state: State = {
-  title: true,
-  asteroids: [],
-  bullets: [],
-  enemyBullets: [],
-  rotation: 0,
-  ship: {
-    pos: [0, 0],
-    vec: [0, 0],
-    thrust: 0,
-    angle: 1,
-    colliderSize: 0.5,
-    aura: 0,
-    hitTimer: 0,
-  },
-  auraSize: 5,
-  cooldowns: [0, 0, 0],
-  scheduledBullets: [],
-  mines: [],
-};
+const state: TState = baseState();
 
 // save state on refresh
 
@@ -141,6 +174,10 @@ window.onbeforeunload = () => {
 
 function step(dt) {
   state.rotation += dt;
+  state.signs = state.signs.flatMap((x) => {
+    x.life -= dt;
+    return x.life > 0 ? [x] : [];
+  });
   if (state.title) {
     // ...
     return;
@@ -229,7 +266,8 @@ function step(dt) {
       .map((_) => {
         const x = random() * 6;
         let has: undefined | "m" | "p";
-        if (a.generation === 0 && random() < 0.5) has = "m";
+        const thres = [0, 0.25, 0.25, 0.5, 0.5, 1, 1][state.level];
+        if (a.generation === 0 && random() < thres) has = "m";
         return {
           pos: [...a.pos],
           vec: [cos(x) * 4, sin(x) * 4],
@@ -269,6 +307,7 @@ function step(dt) {
   });
 
   updateShip(state.ship, dt);
+  checkWin();
 }
 
 let shipParticles: TParticleEffect = null;
@@ -366,6 +405,24 @@ function collideAura(
   }
 }
 
+function checkWin() {
+  if (!state.win && ![...state.asteroids, ...state.mines].length) {
+    state.win = 1;
+    state.signs.push({
+      index: 10 + (0 | (random() * 4)),
+      life: 2,
+      pos: [0, -5],
+    });
+    setTimeout(() => {
+      if (state.level < 5) {
+        setLevel(state.level + 1);
+      } else {
+        // nada
+      }
+    }, 2200);
+  }
+}
+
 export { shipParticles };
 
 function wraparound(p: Vec2) {
@@ -376,6 +433,15 @@ function wraparound(p: Vec2) {
   if (p[1] > 10) p[1] -= 20;
   if (p[1] < -10) p[1] += 20;
 }
+
+window.addEventListener("keyup", (e) => {
+  if (e.code === "KeyQ" && state.title) {
+    setLevel();
+  }
+  if (e.key === "Escape") {
+    titleScreen();
+  }
+});
 
 // @ts-ignore
 window.state = state;
