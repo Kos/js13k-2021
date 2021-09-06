@@ -26,15 +26,18 @@ const texts = [
   "tap or press Q to start",
   "mind the rhythm",
   "level 1/6\nwarm up the engines", // 4
-  "level 2/6\nmy house is full of traps",
-  "level 3/6\nclever naming",
+  "level 2/6\naura sense",
+  "level 3/6\nmy house is full of traps",
   "level 4/6\nmagicland dizzy",
   "level 5/6\nminefield mahjong",
   "level 6/6\nseason finale",
   "well done", // 10
   "excellent",
   "astounding",
-  "astoneding",
+  "astoneding", // sic
+  "q", // 14
+  "w",
+  "e",
 ].map(makeTextDrawcall);
 
 regl.frame((context) => {
@@ -182,33 +185,6 @@ regl.frame((context) => {
     }
   }
 
-  // Poor man's coordinate system
-  // const cubes: Vec2[] = [
-  //   [-16, -9],
-  //   [-8, -9],
-  //   [0, -9],
-  //   [8, -9],
-  //   [16, -9],
-  //   [-16, 0],
-  //   [-8, 0],
-  //   [0, 0],
-  //   [8, 0],
-  //   [16, 0],
-  //   [-16, 9],
-  //   [-8, 9],
-  //   [0, 9],
-  //   [8, 9],
-  //   [16, 9],
-  // ];
-  // cubes.forEach((transform) =>
-  //   drawCube({
-  //     translation: transform,
-  //     rotation: state.rotation,
-  //     scale: 0.05,
-  //     thickness: 0.2,
-  //   })
-  // );
-
   particles.forEach((p) => {
     p.render();
   });
@@ -229,12 +205,26 @@ regl.frame((context) => {
   // hud
   if (!state.title) {
     [-1, 0, 1].forEach((x, i) => {
+      const color: [number, number, number] =
+        state.cooldowns[i] > 0 ? [0.3, 0.3, 0.3] : [0.7, 0.7, 0.7];
       drawCube({
         translation: [x * 2, -8],
+        rotation: -0.2,
+        rotationY: -0.15,
+        rotationZ: 0.04,
         scale: 0.08,
         thickness: 0.2,
-        color: state.cooldowns[i] > 0 ? [0.1, 0.1, 0.1] : [0.7, 0.7, 0.7],
+        color,
+      });
+      texts[15 + x]({
+        translation: [x * 2, -7.7],
+        scale: 0.005,
+        thickness: 0.2,
+        color,
       });
     });
+  }
+
+  if (!state.title) {
   }
 });

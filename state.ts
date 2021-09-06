@@ -141,6 +141,14 @@ export function titleScreen() {
         generation: 0,
       },
     ],
+    mines: [
+      {
+        pos: [0, -2],
+        vec: [0, 0],
+        life: 1,
+        colliderSize: 0.5,
+      },
+    ],
     win: 0,
   });
 }
@@ -149,6 +157,7 @@ export function setLevel(n: number = 0) {
   state.title = false;
   state.level = n;
   state.asteroids = [];
+  state.mines = [];
   state.win = 0;
   state.signs.push({
     index: n + 4,
