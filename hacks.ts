@@ -2,7 +2,7 @@
 
 import { playBGM } from "./audio";
 import { makeExplosion, particles } from "./particles";
-import { newAsteroid, newMine, state, titleScreen } from "./state";
+import { newAsteroid, state, titleScreen } from "./state";
 
 window.addEventListener("keypress", (e) => {
   if (e.key === "a") {
@@ -16,9 +16,6 @@ window.addEventListener("keypress", (e) => {
   }
   if (e.key === "T") {
     titleScreen();
-  }
-  if (e.key === "M") {
-    newMine();
   }
 });
 

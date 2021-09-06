@@ -19,9 +19,6 @@ void main() {
     float f = pow(
         pow(sin(gl_FragCoord.y), 2.0),
         0.4);
-    float g = pow(
-        pow(sin(gl_FragCoord.x), 2.0),
-        0.4);
     vec3 color = VColor * (VLife/LifeMax) * f;
 
     gl_FragColor = vec4(color, 1);

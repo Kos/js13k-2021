@@ -19,6 +19,7 @@ type TAsteroid = {
   colliderSize: number;
   children: number[];
   generation: number;
+  has?: "m" | "p";
 };
 
 export type TBullet = {
@@ -33,6 +34,7 @@ type TMine = {
   pos: Vec2;
   vec: Vec2;
   life: number;
+  inv: number; // invulnerability time left
   collides?: boolean;
   colliderSize: number;
 };
@@ -76,15 +78,6 @@ export function newAsteroid() {
     colliderSize: 1.6,
     children: [4, 3],
     generation: 0,
-  });
-}
-
-export function newMine() {
-  state.mines.push({
-    pos: [0, -2],
-    vec: [0, 0],
-    colliderSize: 0.5,
-    life: 3,
   });
 }
 
@@ -154,11 +147,16 @@ function step(dt) {
   }
 
   state.ship.collides = false;
-  state.asteroids.forEach((a) => {
+  [...state.asteroids, ...state.mines].forEach((a) => {
     a.pos[0] += a.vec[0] * dt;
     a.pos[1] += a.vec[1] * dt;
     wraparound(a.pos);
-    a.rotation += dt;
+    // @ts-ignore
+    if (a.rotation !== undefined) a.rotation += dt;
+    // @ts-ignore
+    if (a.life !== undefined) a.life -= dt;
+    // @ts-ignore
+    if (a.inv !== undefined) a.inv -= dt;
     a.collides = false;
     if (state.ship.hitTimer === 0) {
       collide(a, state.ship, state.ship.colliderSize);
@@ -167,6 +165,7 @@ function step(dt) {
       collideAura(a, state.ship, state.ship.aura);
     }
   });
+
   state.bullets = state.bullets.flatMap((b) => {
     b.pos[0] += b.vec[0] * dt;
     b.pos[1] += b.vec[1] * dt;
@@ -187,6 +186,7 @@ function step(dt) {
     }
     return [];
   });
+
   // O(n^2) party [INSERT QUADTREE HERE]
   [...state.bullets, ...state.enemyBullets].forEach((b) => {
     state.asteroids.forEach((a) => {
@@ -215,27 +215,37 @@ function step(dt) {
       return [];
     }
     const n = children.shift();
+    if (a.has === "m") {
+      state.mines.push({
+        pos: [...a.pos],
+        vec: [random(), random()],
+        colliderSize: 0.5,
+        life: 3,
+        inv: 1,
+      });
+    }
     return Array(n)
       .fill(0)
       .map((_) => {
         const x = random() * 6;
+        let has: undefined | "m" | "p";
+        if (a.generation === 0 && random() < 0.5) has = "m";
         return {
           pos: [...a.pos],
           vec: [cos(x) * 4, sin(x) * 4],
           rotation: 0,
           rZ: random(),
-          color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
+          color: has === "m" ? [1, 0, 0] : [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
           colliderSize: a.colliderSize / 2,
           children: [...children],
           generation: a.generation + 1,
+          has,
         };
       });
   });
 
   state.mines = state.mines.flatMap((m) => {
-    m.life -= dt;
-    collide(m, state.ship, state.ship.colliderSize);
-    if (m.collides) {
+    if (m.collides && m.inv < 0) {
       if (particles.length < 20) particles.push(...makeExplosion(m.pos));
       return [];
     }
@@ -244,18 +254,14 @@ function step(dt) {
       if (particles.length < 20) particles.push(...makeExplosion(m.pos));
       // spawn bullets
       for (let i = 0; i < TAU; i += TAU / 8) {
-        state.enemyBullets.push({
-          life: 0.8,
-          pos: [...m.pos],
-          vec: [sin(i) * 15, cos(i) * 15],
-          rotation: i,
-        });
-        state.enemyBullets.push({
-          life: 0.6,
-          pos: [...m.pos],
-          vec: [sin(i) * 8, cos(i) * 8],
-          rotation: i,
-        });
+        [15, 8].map((v) =>
+          state.enemyBullets.push({
+            life: 0.6,
+            pos: [...m.pos],
+            vec: [sin(i) * v, cos(i) * v],
+            rotation: i,
+          })
+        );
       }
       return [];
     }
@@ -350,7 +356,7 @@ function collide(
 }
 
 function collideAura(
-  a: TAsteroid,
+  a: { pos: Vec2; colliderSize: number; collides?: boolean },
   s: { pos: Vec2; collides?: boolean },
   auraSize: number
 ) {
