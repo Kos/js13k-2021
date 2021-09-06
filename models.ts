@@ -6,7 +6,7 @@ import asteroidModel from "./models/asteroid.json";
 import asteroid2Model from "./models/asteroid2.json";
 import asteroid3Model from "./models/asteroid3.json";
 import leshipModel from "./models/leship.json";
-const { PI, cos, sin } = Math;
+import { cos, sin, sqrt, TAU } from "./math";
 
 export type TModel = {
   verts: number[][];
@@ -47,7 +47,7 @@ function makeCircle(): TModel {
   const verts = [];
   const elements = [];
   for (let i = 0; i < count; ++i) {
-    const angle = (2 * PI * i) / count;
+    const angle = (TAU * i) / count;
     verts.push([cos(angle), sin(angle), 0]);
     elements.push([i, i + 1]);
   }
@@ -73,8 +73,8 @@ function makeMine(): TModel {
   const verts: number[][] = [],
     elements: number[][] = [];
   for (let h = -0.7; h <= 0.8; h += 0.7) {
-    for (let a = 0; a < 2 * PI; a += 1.2) {
-      const r = Math.sqrt(1 - h * h);
+    for (let a = 0; a < TAU; a += 1.2) {
+      const r = sqrt(1 - h * h);
       verts.push([cos(a) * r, h, sin(a) * r]);
       verts.push([cos(a) * (r * 0.5), h * 0.5, sin(a) * (r * 0.5)]);
       const l = verts.length;

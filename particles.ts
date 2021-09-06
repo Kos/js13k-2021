@@ -1,8 +1,8 @@
 // particle system?
 
 import type { Vec2, Vec3 } from "regl";
+import { cos, r11, sin } from "./math";
 import regl, { vert, frag } from "./regl";
-const { cos, sin, random } = Math;
 export type TParticleEffect = {
   // How particles should be emitted and updated
   pos: Vec2;
@@ -15,8 +15,6 @@ export type TParticleEffect = {
   update: (dt: number) => void;
   render: () => void;
 };
-
-const r11 = () => random() * 2 - 1;
 
 type TParticleSettings = {
   len: number;

@@ -13,9 +13,9 @@ import {
 import regl from "./regl";
 import { shipParticles, state, step } from "./state";
 import { particles } from "./particles";
-import lerp from "./lerp";
 import { currentBeatFraction } from "./audio";
 import { makeTextDrawcall } from "./text";
+import { min, pow, sin, TAU, lerp } from "./math";
 
 let prevTime = null;
 
@@ -57,8 +57,7 @@ regl.frame((context) => {
       translation: e.pos,
       scale: 0.05,
       thickness: 0.2,
-      rotationY:
-        state.rotation * 2 + Math.pow(2, 1.2 - Math.min(e.life, 1.2) + 1) * 4,
+      rotationY: state.rotation * 2 + pow(2, 1.2 - min(e.life, 1.2) + 1) * 4,
       color: [0.3, 0, 0],
     });
     (e.life > 1.2 ? drawEye2 : drawEye)({
@@ -84,11 +83,19 @@ regl.frame((context) => {
       color: [1, 0, 0],
     });
   });
+  state.enemyBullets.forEach((b) => {
+    drawLine({
+      translation: b.pos,
+      rotationZ: b.rotation,
+      scale: 0.05,
+      thickness: 0.3,
+      color: [1, 1, 0],
+    });
+  });
 
   if (state.title) {
     function easeOutElastic(x: number): number {
-      const { pow, sin, PI } = Math;
-      const c4 = (2 * PI) / 3;
+      const c4 = TAU / 3;
 
       return x === 0
         ? 0
@@ -114,9 +121,7 @@ regl.frame((context) => {
   } else {
     drawLeship({
       translation: state.ship.pos,
-      rotation: state.ship.hitTimer
-        ? Math.pow(state.ship.hitTimer / 1.2, 3) * 7
-        : 0,
+      rotation: state.ship.hitTimer ? pow(state.ship.hitTimer / 1.2, 3) * 7 : 0,
       rotationY: state.ship.thrust,
       rotationZ: state.ship.angle,
       scale: 0.05,

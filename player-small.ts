@@ -27,6 +27,8 @@
  * based on version obtained from https://sb.bitsnbites.eu/player-small.js
  */
 
+import { random, sin } from "./math";
+
 export default function CPlayer() {
   //--------------------------------------------------------------------------
   // Private methods
@@ -34,7 +36,7 @@ export default function CPlayer() {
 
   // Oscillators
   var osc_sin = function (value) {
-    return Math.sin(value * 6.283184);
+    return sin(value * 6.283184);
   };
 
   var osc_saw = function (value) {
@@ -114,7 +116,7 @@ export default function CPlayer() {
 
       // Noise oscillator
       if (noiseVol) {
-        rsample += (2 * Math.random() - 1) * noiseVol;
+        rsample += (2 * random() - 1) * noiseVol;
       }
 
       // Add to (mono) channel buffer
@@ -258,7 +260,7 @@ export default function CPlayer() {
               if (fxLFO) {
                 f *= oscLFO(lfoFreq * k) * lfoAmt + 0.5;
               }
-              f = 1.5 * Math.sin(f);
+              f = 1.5 * sin(f);
               low += f * band;
               high = q * (rsample - band) - low;
               band += f * high;
@@ -283,7 +285,7 @@ export default function CPlayer() {
               filterActive = rsample * rsample > 1e-5;
 
               // Panning
-              t = Math.sin(panFreq * k) * panAmt + 0.5;
+              t = sin(panFreq * k) * panAmt + 0.5;
               lsample = rsample * (1 - t);
               rsample *= t;
             } else {

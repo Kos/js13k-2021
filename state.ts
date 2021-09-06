@@ -1,15 +1,13 @@
 import { Vec2, Vec3 } from "regl";
 import { playQ, playW } from "./audio";
 import input from "./input";
+import { cos, max, pow, r2, random, sin, TAU } from "./math";
 import {
   makeExhaust,
   makeExplosion,
   particles,
   TParticleEffect,
 } from "./particles";
-const { cos, sin, random } = Math;
-const r1 = () => random() * 0.1;
-const r2 = () => random() * 0.2;
 
 type TAsteroid = {
   pos: Vec2;
@@ -23,7 +21,7 @@ type TAsteroid = {
   generation: number;
 };
 
-type TBullet = {
+export type TBullet = {
   pos: Vec2;
   vec: Vec2;
   rotation: number;
@@ -44,6 +42,7 @@ type State = {
   rotation: number;
   asteroids: TAsteroid[];
   bullets: TBullet[];
+  enemyBullets: TBullet[];
   ship: {
     pos: Vec2;
     vec: Vec2;
@@ -72,7 +71,7 @@ export function newAsteroid() {
     pos: [cos(t) * 16, sin(t) * 9],
     vec: [cos(x) * 4, sin(x) * 4],
     rotation: 0,
-    rZ: Math.random(),
+    rZ: random(),
     color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
     colliderSize: 1.6,
     children: [4, 3],
@@ -96,7 +95,7 @@ export function titleScreen() {
       pos: [-11, 2],
       vec: [0, 0],
       rotation: 0,
-      rZ: Math.random(),
+      rZ: random(),
       color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
       colliderSize: 2.6,
       children: [],
@@ -106,7 +105,7 @@ export function titleScreen() {
       pos: [11, 2],
       vec: [0, 0],
       rotation: 0,
-      rZ: Math.random(),
+      rZ: random(),
       color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
       colliderSize: 2.6,
       children: [],
@@ -121,6 +120,7 @@ const state: State = {
   title: true,
   asteroids: [],
   bullets: [],
+  enemyBullets: [],
   rotation: 0,
   ship: {
     pos: [0, 0],
@@ -177,16 +177,33 @@ function step(dt) {
     }
     return [];
   });
+  state.enemyBullets = state.enemyBullets.flatMap((b) => {
+    b.pos[0] += b.vec[0] * dt;
+    b.pos[1] += b.vec[1] * dt;
+    wraparound(b.pos);
+    b.life -= dt;
+    if (b.life > 0 && !b.collides) {
+      return [b];
+    }
+    return [];
+  });
   // O(n^2) party [INSERT QUADTREE HERE]
-  state.bullets.forEach((b) => {
+  [...state.bullets, ...state.enemyBullets].forEach((b) => {
     state.asteroids.forEach((a) => {
       collide(a, b, 0);
     });
+  });
+  state.bullets.forEach((b) => {
     state.mines.forEach((a) => {
       collide(a, b, 0);
     });
   });
   // end O(N^2) party
+  if (state.ship.hitTimer === 0) {
+    state.enemyBullets.forEach((b) => {
+      collide(state.ship, b, 0);
+    });
+  }
 
   state.asteroids = state.asteroids.flatMap((a) => {
     if (!a.collides) {
@@ -201,12 +218,12 @@ function step(dt) {
     return Array(n)
       .fill(0)
       .map((_) => {
-        const x = Math.random() * 6;
+        const x = random() * 6;
         return {
           pos: [...a.pos],
           vec: [cos(x) * 4, sin(x) * 4],
           rotation: 0,
-          rZ: Math.random(),
+          rZ: random(),
           color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
           colliderSize: a.colliderSize / 2,
           children: [...children],
@@ -218,13 +235,31 @@ function step(dt) {
   state.mines = state.mines.flatMap((m) => {
     m.life -= dt;
     collide(m, state.ship, state.ship.colliderSize);
-    if (m.life > 0 && !m.collides) {
-      return [m];
-    } else {
+    if (m.collides) {
       if (particles.length < 20) particles.push(...makeExplosion(m.pos));
-      // spawn bullets
       return [];
     }
+    if (m.life < 0) {
+      // self destruct - TODO match this to music
+      if (particles.length < 20) particles.push(...makeExplosion(m.pos));
+      // spawn bullets
+      for (let i = 0; i < TAU; i += TAU / 8) {
+        state.enemyBullets.push({
+          life: 0.8,
+          pos: [...m.pos],
+          vec: [sin(i) * 15, cos(i) * 15],
+          rotation: i,
+        });
+        state.enemyBullets.push({
+          life: 0.6,
+          pos: [...m.pos],
+          vec: [sin(i) * 8, cos(i) * 8],
+          rotation: i,
+        });
+      }
+      return [];
+    }
+    return [m];
   });
 
   updateShip(state.ship, dt);
@@ -239,7 +274,7 @@ function updateShip(s: TShip, dt: number) {
   if (s.collides) {
     s.hitTimer = 1.2;
   } else {
-    s.hitTimer = Math.max(0, s.hitTimer - dt);
+    s.hitTimer = max(0, s.hitTimer - dt);
   }
   const si = sin(s.angle),
     co = cos(s.angle);
@@ -248,9 +283,9 @@ function updateShip(s: TShip, dt: number) {
     s.vec[1] += accel * dt * co;
   }
   s.thrust += (input.right - input.left) * dt * 4;
-  s.vec[0] *= Math.pow(0.5, dt * 2);
-  s.vec[1] *= Math.pow(0.5, dt * 2);
-  s.thrust *= Math.pow(0.5, dt * 3);
+  s.vec[0] *= pow(0.5, dt * 2);
+  s.vec[1] *= pow(0.5, dt * 2);
+  s.thrust *= pow(0.5, dt * 3);
 
   s.pos[0] += s.vec[0] * dt;
   s.pos[1] += s.vec[1] * dt;
@@ -286,7 +321,7 @@ function updateShip(s: TShip, dt: number) {
     }
   }
 
-  state.cooldowns = state.cooldowns.map((x) => Math.max(0, x - dt));
+  state.cooldowns = state.cooldowns.map((x) => max(0, x - dt));
   if (!state.ship.hitTimer) {
     if (input.skill1 && state.cooldowns[0] === 0) {
       playQ();

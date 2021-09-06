@@ -1,3 +1,4 @@
+import { max } from "./math";
 import { makeMeshDrawCall, preprocessModel, TModel } from "./models";
 const font: Record<string, number[][]> = {
   A: [
@@ -88,7 +89,7 @@ function makeTextModel(text: string): TModel {
     });
   }
   // Centering
-  const offset = Math.max(...verts.map((x) => x[0]));
+  const offset = max(...verts.map((x) => x[0]));
   for (let a of verts) {
     a[0] -= offset / 2;
   }
