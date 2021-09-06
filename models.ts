@@ -69,6 +69,57 @@ function makeLine(): TModel {
   };
 }
 
+function makeMine(): TModel {
+  const verts: number[][] = [],
+    elements: number[][] = [];
+  for (let h = -0.7; h <= 0.8; h += 0.7) {
+    for (let a = 0; a < 2 * PI; a += 1.2) {
+      const r = Math.sqrt(1 - h * h);
+      verts.push([cos(a) * r, h, sin(a) * r]);
+      verts.push([cos(a) * (r * 0.5), h * 0.5, sin(a) * (r * 0.5)]);
+      const l = verts.length;
+      elements.push([l - 2, l - 1]);
+    }
+  }
+  console.log(verts, elements);
+  return { verts, elements };
+}
+
+function makeEye(): TModel {
+  return {
+    verts: [
+      [-2, 0, 0],
+      [-2, -1, 0],
+      [0, -2, 0],
+      [2, -1, 0],
+      [2, 0, 0],
+      [2, 1, 0],
+      [0, 2, 0],
+      [-2, 1, 0],
+      // ...
+      [-0.5, -1, 0],
+      [-0.5, 1, 0],
+      [0.5, 1, 0],
+      [0.5, -1, 0],
+    ],
+    elements: [
+      [0, 1],
+      [1, 2],
+      [2, 3],
+      [3, 4],
+      [4, 5],
+      [5, 6],
+      [6, 7],
+      [7, 0],
+      // here
+      [8, 9],
+      [9, 10],
+      [10, 11],
+      [11, 8],
+    ],
+  };
+}
+
 type ProcessedModel = ReturnType<typeof preprocessModel>;
 
 // Fix orientation that I messed up earlier
@@ -79,15 +130,18 @@ leshipModel.verts.forEach((vert) => {
 
 export type Props = {
   translation: Vec2;
-  rotation: number;
-  rotationY: number;
-  rotationZ: number;
-  thickness: number;
-  scale: number;
-  color: Vec3;
+  rotation?: number;
+  rotationY?: number;
+  rotationZ?: number;
+  thickness?: number;
+  scale?: number;
+  color?: Vec3;
 };
 
-export function makeMeshDrawCall(model: ProcessedModel) {
+export function makeMeshDrawCall(
+  model: ProcessedModel,
+  count?: number
+): (props: Props) => void {
   return regl<Uniforms, {}, Props>({
     vert,
     frag,
@@ -99,11 +153,13 @@ export function makeMeshDrawCall(model: ProcessedModel) {
       Life: { constant: [1] },
     },
     elements: model.Elements,
+    // @ts-ignore
+    count: count ? (context, props) => count : undefined,
     uniforms: {
+      Translation: (context, props) => props.translation,
       Rotation: (context, props) => props.rotation || 0,
       RotationY: (context, props) => props.rotationY || 0,
       RotationZ: (context, props) => props.rotationZ || 0,
-      Translation: (context, props) => props.translation,
       Thickness: (context, props) => props.thickness * 0.01 || 0.01,
       Scale: (context, props) => props.scale || 0.5,
       Color: (context, props) => props.color || [1, 1, 0],
@@ -119,6 +175,9 @@ const drawAsteroid3 = makeMeshDrawCall(preprocessModel(asteroid3Model));
 const drawLeship = makeMeshDrawCall(preprocessModel(leshipModel));
 const drawCircle = makeMeshDrawCall(preprocessModel(makeCircle()));
 const drawLine = makeMeshDrawCall(preprocessModel(makeLine()));
+const drawMine = makeMeshDrawCall(preprocessModel(makeMine()));
+const drawEye = makeMeshDrawCall(preprocessModel(makeEye()));
+const drawEye2 = makeMeshDrawCall(preprocessModel(makeEye()), 6 * 4);
 
 export {
   drawCube,
@@ -128,4 +187,7 @@ export {
   drawLeship,
   drawCircle,
   drawLine,
+  drawMine,
+  drawEye,
+  drawEye2,
 };

@@ -4,8 +4,11 @@ import {
   drawAsteroid3,
   drawCircle,
   drawCube,
+  drawEye,
+  drawEye2,
   drawLeship,
   drawLine,
+  drawMine,
 } from "./models";
 import regl from "./regl";
 import { shipParticles, state, step } from "./state";
@@ -122,6 +125,20 @@ regl.frame((context) => {
       });
     }
   }
+
+  drawMine({
+    translation: [0, -3],
+    scale: 0.05,
+    thickness: 0.2,
+    rotationY: state.rotation,
+    color: [0.3, 0, 0],
+  });
+  (currentBeatFraction() < 0.8 ? drawEye : drawEye2)({
+    translation: [0, -3],
+    scale: 0.008,
+    thickness: 0.2,
+    color: [1, 0, 0],
+  });
 
   // Poor man's coordinate system
   // const cubes: Vec2[] = [
