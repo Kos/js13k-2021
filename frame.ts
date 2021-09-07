@@ -222,6 +222,14 @@ regl.frame((context) => {
         thickness: 0.2,
         color,
       });
+      if (state.cooldowns[i] > 0) {
+        makeTextDrawcall(state.cooldowns[i].toFixed(1))({
+          translation: [x * 2, -8.5],
+          scale: 0.002,
+          thickness: 0.2,
+          color: [1, 1, 1],
+        });
+      }
     });
   }
 

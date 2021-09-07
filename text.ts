@@ -79,6 +79,7 @@ const font: Record<string, number[][]> = {
   8: [[0, 9, 2, 7, -2, 3, 0, 0, 2, 3, -2, 7, 0, 9]],
   9: [[2, 6, 0, 4, -2, 6, 0, 9, 2, 6, 2, 2, -1, 0]],
   "/": [[2, 9, -2, 0]],
+  ".": [[0, 0, 1, 0]],
 };
 
 function makeTextModel(text: string): TModel {
