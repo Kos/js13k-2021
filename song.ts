@@ -386,7 +386,7 @@ export default {
         0, // FX_DELAY_TIME
       ],
       // Patterns
-      p: [, 1, 1, 1, 1, , 1],
+      p: [, 1, , 1, 1, , 1],
       // Columns
       c: [
         {
@@ -513,11 +513,11 @@ export default {
       // Instrument 9
       i: [
         1, // OSC1_WAVEFORM
-        77, // OSC1_VOL
+        36, // OSC1_VOL
         128, // OSC1_SEMI
         1, // OSC1_XENV
         1, // OSC2_WAVEFORM
-        73, // OSC2_VOL
+        36, // OSC2_VOL
         128, // OSC2_SEMI
         2, // OSC2_DETUNE
         1, // OSC2_XENV
@@ -539,11 +539,11 @@ export default {
         37, // FX_DRIVE
         172, // FX_PAN_AMT
         3, // FX_PAN_FREQ
-        84, // FX_DELAY_AMT
+        55, // FX_DELAY_AMT
         2, // FX_DELAY_TIME
       ],
       // Patterns
-      p: [1],
+      p: [, , , , , , , 1],
       // Columns
       c: [
         {

@@ -92,7 +92,7 @@ regl.frame((context) => {
     });
   });
 
-  state.bullets.forEach((b) => {
+  [...state.bullets, ...state.mortars].forEach((b) => {
     drawLine({
       translation: b.pos,
       rotationZ: b.rotation,

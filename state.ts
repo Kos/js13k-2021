@@ -1,7 +1,7 @@
 import { Vec2, Vec3 } from "regl";
-import { playBoom, playQ, playW } from "./audio";
+import { currentBeatFraction, playBoom, playE, playQ, playW } from "./audio";
 import input from "./input";
-import { cos, max, pow, r2, random, sin, TAU } from "./math";
+import { cos, max, pow, r2, random, sin, sq, TAU } from "./math";
 import {
   makeExhaust,
   makeExplosion,
@@ -30,6 +30,11 @@ export type TBullet = {
   collides?: boolean;
 };
 
+type TMortarBlast = {
+  pos: Vec2;
+  life: number;
+};
+
 type TSign = {
   pos: Vec2;
   life: number;
@@ -51,6 +56,7 @@ type TState = {
   rotation: number;
   asteroids: TAsteroid[];
   bullets: TBullet[];
+  mortars: TBullet[];
   enemyBullets: TBullet[];
   ship: {
     pos: Vec2;
@@ -63,8 +69,10 @@ type TState = {
     hitTimer: number;
   };
   auraSize: number;
+  blasts: TMortarBlast[];
   cooldowns: number[];
   scheduledBullets: number[];
+  scheduledMortar?: number;
   renderHitboxes?: boolean;
   mines: TMine[];
   signs: TSign[];
@@ -73,7 +81,7 @@ type TState = {
 
 type TShip = TState["ship"];
 
-// mutator
+// mutators
 
 export function newAsteroid() {
   const x = random() * 3.14 * 2;
@@ -96,6 +104,7 @@ function baseState(): TState {
     level: 0,
     asteroids: [],
     bullets: [],
+    mortars: [],
     enemyBullets: [],
     rotation: 0,
     ship: {
@@ -108,6 +117,7 @@ function baseState(): TState {
       hitTimer: 0,
     },
     auraSize: 5,
+    blasts: [],
     cooldowns: [0, 0, 0],
     scheduledBullets: [],
     mines: [],
@@ -171,6 +181,7 @@ export function setLevel(n: number = 0) {
 // initial state
 
 const state: TState = baseState();
+titleScreen();
 
 // save state on refresh
 
@@ -188,7 +199,6 @@ function step(dt) {
     return x.life > 0 ? [x] : [];
   });
   if (state.title) {
-    // ...
     return;
   }
 
@@ -213,14 +223,22 @@ function step(dt) {
   });
 
   state.bullets = state.bullets.flatMap((b) => {
-    b.pos[0] += b.vec[0] * dt;
-    b.pos[1] += b.vec[1] * dt;
-    wraparound(b.pos);
+    move(b, dt);
     b.life -= dt;
     if (b.life > 0 && !b.collides) {
       return [b];
     }
     return [];
+  });
+  state.mortars = state.mortars.flatMap((m) => {
+    move(m, dt);
+    m.life -= dt;
+    if (m.life > 0) {
+      return [m];
+    } else {
+      boom(m.pos);
+      return [];
+    }
   });
   state.enemyBullets = state.enemyBullets.flatMap((b) => {
     b.pos[0] += b.vec[0] * dt;
@@ -296,8 +314,7 @@ function step(dt) {
       boom(m.pos);
       return [];
     }
-    if (m.life < 0) {
-      // self destruct - TODO match this to music
+    if (m.life < 0 && currentBeatFraction() < 0.05) {
       boom(m.pos);
       // spawn bullets
       for (let i = 0; i < TAU; i += TAU / 8) {
@@ -367,6 +384,10 @@ function updateShip(s: TShip, dt: number) {
       return [];
     }
   });
+  if (state.scheduledMortar) {
+    state.scheduledMortar = max(0, state.scheduledMortar - dt);
+    if (!state.scheduledMortar) fireMortars(s);
+  }
 
   if (state.ship.aura) {
     state.ship.aura += dt;
@@ -387,9 +408,25 @@ function updateShip(s: TShip, dt: number) {
       state.cooldowns[1] = 0.6 * 8 - 0.2;
       state.ship.aura = 0.1;
     }
+    if (input.skill3 && state.cooldowns[2] === 0) {
+      playE();
+      state.cooldowns[2] = 0.6 * 12 - 0.2;
+      fireMortars(s);
+      state.scheduledMortar = 0.6 * (3 / 16) * 4;
+    }
   }
 }
-const sq = (a: number) => a * a;
+
+function fireMortars(s: TShip) {
+  state.mortars.push(
+    ...[-0.6, 0.6].map((q) => ({
+      pos: [...s.pos] as Vec2,
+      vec: [sin(s.angle + q) * 8, cos(s.angle + q) * 8] as Vec2,
+      rotation: s.angle + q,
+      life: 0.6 * (7 / 16) * 4,
+    }))
+  );
+}
 
 function collide(
   a: { pos: Vec2; colliderSize: number; collides?: boolean },
@@ -438,6 +475,12 @@ function boom(p: Vec2) {
 }
 
 export { shipParticles };
+
+function move({ pos, vec }: { pos: Vec2; vec: Vec2 }, dt: number) {
+  pos[0] += vec[0] * dt;
+  pos[1] += vec[1] * dt;
+  wraparound(pos);
+}
 
 function wraparound(p: Vec2) {
   // wraparound with a little deadzone for simplicity
