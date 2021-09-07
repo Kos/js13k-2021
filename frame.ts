@@ -38,6 +38,7 @@ const texts = [
   "q", // 14
   "w",
   "e",
+  "beat\nmiss", // 17
 ].map(makeTextDrawcall);
 
 regl.frame((context) => {
@@ -191,14 +192,15 @@ regl.frame((context) => {
   shipParticles && shipParticles.render();
 
   state.signs.forEach((s) => {
+    const { v = 1 } = s;
     const a = max(0, -s.life + 1);
     const f = pow(a, 3) * 30;
     texts[s.index]({
       translation: s.pos,
-      color: [1 - a, 1 - a, 1 - a],
-      scale: 0.004,
+      color: s.color || [1 - a, 1 - a, 1 - a],
+      scale: s.size || 0.004,
       thickness: 0.2,
-      rotation: f,
+      rotation: f * v,
     });
   });
 

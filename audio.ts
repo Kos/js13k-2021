@@ -76,15 +76,8 @@ function play(song: TSong, loop: boolean = false, divisor: number = 1) {
   return () => {
     const source = toSource(buf);
     source.loop = loop;
+    // TODO Make a loophole for nextBeat if missed beat by less than 0.1s???
     source.start(nextBeat(divisor));
-  };
-}
-
-function playNow(song: TSong) {
-  const buf = toBuffer(song);
-  return () => {
-    const source = toSource(buf);
-    source.start();
   };
 }
 

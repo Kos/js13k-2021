@@ -1,7 +1,7 @@
 import { Vec2, Vec3 } from "regl";
 import { currentBeatFraction, playBoom, playE, playQ, playW } from "./audio";
 import input from "./input";
-import { cos, max, pow, r2, random, sin, sq, TAU } from "./math";
+import { cos, max, pow, r2, random, sign, sin, sq, TAU } from "./math";
 import {
   makeExhaust,
   makeExplosion,
@@ -39,6 +39,9 @@ type TSign = {
   pos: Vec2;
   life: number;
   index: number;
+  size?: number;
+  color?: Vec3;
+  v?: number;
 };
 
 type TMine = {
@@ -399,22 +402,47 @@ function updateShip(s: TShip, dt: number) {
   state.cooldowns = state.cooldowns.map((x) => max(0, x - dt));
   if (!state.ship.hitTimer) {
     if (input.skill1 && state.cooldowns[0] === 0) {
-      playQ();
       state.cooldowns[0] = 0.6 * 4 - 0.2;
-      state.scheduledBullets.push(0.15, 0.3, 0.45, 0.6, 0.75);
+      if (checkBeat(0.5)) {
+        playQ();
+        state.scheduledBullets.push(0.15, 0.3, 0.45, 0.6, 0.75);
+      }
     }
     if (input.skill2 && state.cooldowns[1] === 0) {
-      playW();
       state.cooldowns[1] = 0.6 * 8 - 0.2;
-      state.ship.aura = 0.1;
+      if (checkBeat(0.7)) {
+        playW();
+        state.ship.aura = 0.1;
+      }
     }
     if (input.skill3 && state.cooldowns[2] === 0) {
-      playE();
       state.cooldowns[2] = 0.6 * 12 - 0.2;
-      fireMortars(s);
-      state.scheduledMortar = 0.6 * (3 / 16) * 4;
+      if (checkBeat(0.7)) {
+        playE();
+        fireMortars(s);
+        state.scheduledMortar = 0.6 * (3 / 16) * 4;
+      }
     }
   }
+}
+
+function checkBeat(t: number): boolean {
+  const f = currentBeatFraction();
+  if (f > t || f < 0.05) {
+    console.debug("checkBeat", f, "true");
+    return true;
+  }
+  const { pos } = state.ship;
+  state.signs.push({
+    index: 17,
+    life: 0.7,
+    v: 0,
+    pos: [pos[0], pos[1] - sign(pos[1])],
+    size: 0.0025,
+    color: [1, 0.5, 0.5],
+  });
+  console.debug("checkBeat", f, "false");
+  return false;
 }
 
 function fireMortars(s: TShip) {
