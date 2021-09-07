@@ -1,6 +1,5 @@
 // Hacks - remove later
 
-import { playBGM } from "./audio";
 import { makeExplosion, particles } from "./particles";
 import { newAsteroid, setLevel, state, titleScreen } from "./state";
 
@@ -40,6 +39,12 @@ window.addEventListener("keypress", (e) => {
   if (e.code === "Digit6") {
     state.signs = [];
     setLevel(5);
+  }
+  if (e.key === "B") {
+    state.blasts.push({
+      pos: [-2, 0],
+      life: 0.6,
+    });
   }
 });
 

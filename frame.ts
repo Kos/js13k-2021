@@ -168,22 +168,43 @@ regl.frame((context) => {
         color: state.ship.collides ? [1, 0, 0] : [0.2, 0.2, 0.2],
       });
     if (state.ship.aura) {
-      const auraThickness = 3 * (0.6 - state.ship.aura);
+      const { pos, aura } = state.ship;
+      const { auraSize: aus } = state;
+      const auraThickness = 3 * (0.6 - aura);
       drawCircle({
-        translation: state.ship.pos,
-        scale: (state.ship.aura * state.auraSize) / 16,
+        translation: pos,
+        scale: (aura * aus) / 16,
         thickness: auraThickness,
         color: [1, 0, 1],
       });
       [0.8, 0.9, 1.1, 1.3].forEach((x) => {
         drawCircle({
-          translation: state.ship.pos,
-          scale: (x * (state.ship.aura * state.auraSize)) / 16,
+          translation: pos,
+          scale: (x * (aura * aus)) / 16,
           thickness: auraThickness * 0.5,
           color: [0.4 * x, 0, 0.4 / x],
         });
       });
     }
+    state.blasts.map(({ pos, life }) => {
+      const aura = 0.6 - life;
+      const aus = 3;
+      const auraThickness = 3 * (0.6 - aura);
+      drawCircle({
+        translation: pos,
+        scale: (aura * aus) / 16,
+        thickness: auraThickness,
+        color: [1, 0, 1],
+      });
+      [0.8, 0.9, 1.1, 1.3].forEach((x) => {
+        drawCircle({
+          translation: pos,
+          scale: (x * (aura * aus)) / 16,
+          thickness: auraThickness * 0.5,
+          color: [1, 0.4 * x, 0.4 / x],
+        });
+      });
+    });
   }
 
   particles.forEach((p) => {

@@ -239,7 +239,10 @@ function step(dt) {
     if (m.life > 0) {
       return [m];
     } else {
-      boom(m.pos);
+      state.blasts.push({
+        pos: m.pos,
+        life: 0.6,
+      });
       return [];
     }
   });
@@ -389,7 +392,7 @@ function updateShip(s: TShip, dt: number) {
   });
   if (state.scheduledMortar) {
     state.scheduledMortar = max(0, state.scheduledMortar - dt);
-    if (!state.scheduledMortar) fireMortars(s);
+    if (!state.scheduledMortar) fireMortars(s, 0.3);
   }
 
   if (state.ship.aura) {
@@ -398,6 +401,10 @@ function updateShip(s: TShip, dt: number) {
       state.ship.aura = 0;
     }
   }
+  state.blasts = state.blasts.flatMap((b) => {
+    b.life -= dt;
+    return b.life < 0 ? [] : [b];
+  });
 
   state.cooldowns = state.cooldowns.map((x) => max(0, x - dt));
   if (!state.ship.hitTimer) {
@@ -445,9 +452,9 @@ function checkBeat(t: number): boolean {
   return false;
 }
 
-function fireMortars(s: TShip) {
+function fireMortars(s: TShip, o: number = 0) {
   state.mortars.push(
-    ...[-0.6, 0.6].map((q) => ({
+    ...[-0.3 - o, 0.3 + o].map((q) => ({
       pos: [...s.pos] as Vec2,
       vec: [sin(s.angle + q) * 8, cos(s.angle + q) * 8] as Vec2,
       rotation: s.angle + q,
