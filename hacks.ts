@@ -40,12 +40,6 @@ window.addEventListener("keypress", (e) => {
     state.signs = [];
     setLevel(5);
   }
-  if (e.key === "B") {
-    state.blasts.push({
-      pos: [-2, 0],
-      life: 0.6,
-    });
-  }
 });
 
 if (state.asteroids.length === 0) {

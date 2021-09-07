@@ -186,8 +186,7 @@ regl.frame((context) => {
         });
       });
     }
-    state.blasts.map(({ pos, life }) => {
-      const aura = 0.6 - life;
+    state.blasts.map(({ pos, size: aura }) => {
       const aus = 3;
       const auraThickness = 3 * (0.6 - aura);
       drawCircle({
@@ -201,7 +200,7 @@ regl.frame((context) => {
           translation: pos,
           scale: (x * (aura * aus)) / 16,
           thickness: auraThickness * 0.5,
-          color: [1, 0.4 * x, 0.4 / x],
+          color: [0.4 * x, 0.4 / x, 1],
         });
       });
     });

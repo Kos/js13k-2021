@@ -33,6 +33,7 @@ export type TBullet = {
 type TMortarBlast = {
   pos: Vec2;
   life: number;
+  size: number;
 };
 
 type TSign = {
@@ -221,8 +222,11 @@ function step(dt) {
       collide(a, state.ship, state.ship.colliderSize);
     }
     if (state.ship.aura) {
-      collideAura(a, state.ship, state.ship.aura);
+      collideAura(a, state.ship, state.ship.aura * state.auraSize);
     }
+    state.blasts.forEach((b) => {
+      collideAura(a, b, b.size * 3);
+    });
   });
 
   state.bullets = state.bullets.flatMap((b) => {
@@ -242,6 +246,7 @@ function step(dt) {
       state.blasts.push({
         pos: m.pos,
         life: 0.6,
+        size: 0,
       });
       return [];
     }
@@ -403,6 +408,7 @@ function updateShip(s: TShip, dt: number) {
   }
   state.blasts = state.blasts.flatMap((b) => {
     b.life -= dt;
+    b.size += dt;
     return b.life < 0 ? [] : [b];
   });
 
@@ -478,10 +484,10 @@ function collide(
 function collideAura(
   a: { pos: Vec2; colliderSize: number; collides?: boolean },
   s: { pos: Vec2; collides?: boolean },
-  auraSize: number
+  size: number
 ) {
   const dist2 = sq(a.pos[0] - s.pos[0]) + sq(a.pos[1] - s.pos[1]);
-  if (dist2 < sq(auraSize * state.auraSize + a.colliderSize)) {
+  if (dist2 < sq(size + a.colliderSize)) {
     a.collides = true;
   }
 }
