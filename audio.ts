@@ -80,9 +80,19 @@ function play(song: TSong, loop: boolean = false, divisor: number = 1) {
   };
 }
 
+function playNow(song: TSong) {
+  const buf = toBuffer(song);
+  return () => {
+    const source = toSource(buf);
+    source.start();
+  };
+}
+
 const playBGM = play(bgm, true);
 const playQ = play(trimEffect(song, 6), false, 1);
 const playW = play(trimEffect(song, 7), false, 1);
+const playE = play(trimEffect(song, 9), false, 1);
+const playBoom = play(trimEffect(song, 10), false, 8);
 
-export { playBGM, playQ, playW };
+export { playBGM, playQ, playW, playE, playBoom };
 playBGM();

@@ -1,5 +1,5 @@
 import { Vec2, Vec3 } from "regl";
-import { playQ, playW } from "./audio";
+import { playBoom, playQ, playW } from "./audio";
 import input from "./input";
 import { cos, max, pow, r2, random, sin, TAU } from "./math";
 import {
@@ -255,7 +255,7 @@ function step(dt) {
     if (!a.collides) {
       return [a];
     }
-    if (particles.length < 20) particles.push(...makeExplosion(a.pos));
+    boom(a.pos);
     const children = [...a.children];
     if (!children.length) {
       return [];
@@ -293,12 +293,12 @@ function step(dt) {
 
   state.mines = state.mines.flatMap((m) => {
     if (m.collides && m.inv < 0) {
-      if (particles.length < 20) particles.push(...makeExplosion(m.pos));
+      boom(m.pos);
       return [];
     }
     if (m.life < 0) {
       // self destruct - TODO match this to music
-      if (particles.length < 20) particles.push(...makeExplosion(m.pos));
+      boom(m.pos);
       // spawn bullets
       for (let i = 0; i < TAU; i += TAU / 8) {
         [15, 8].map((v) =>
@@ -430,6 +430,11 @@ function checkWin() {
       }
     }, 2200);
   }
+}
+
+function boom(p: Vec2) {
+  if (particles.length < 20) particles.push(...makeExplosion(p));
+  playBoom();
 }
 
 export { shipParticles };
