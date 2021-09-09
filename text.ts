@@ -1,5 +1,6 @@
 import { max } from "./math";
-import { makeMeshDrawCall, preprocessModel, TModel } from "./models";
+import { makeMeshDrawCall, preprocessModel, Props, TModel } from "./models";
+import { gl } from "./regl";
 const font: Record<string, number[][]> = {
   A: [
     [-3, 0, 0, 9, 3, 0],
@@ -117,4 +118,14 @@ function makeTextModel(text: string): TModel {
 
 export function makeTextDrawcall(text: string) {
   return makeMeshDrawCall(preprocessModel(makeTextModel(text)));
+}
+
+export function makeOneOffText(text: string) {
+  const m = preprocessModel(makeTextModel(text));
+  return (props: Props) => {
+    makeMeshDrawCall(m)(props);
+    [m.Elements.buffer, m.Normal.buf, m.Position.buf, m.Side.buf].map((x) =>
+      gl.deleteBuffer(x)
+    );
+  };
 }

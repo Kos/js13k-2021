@@ -5,7 +5,7 @@
 import type { Vec2, Vec3, Vec4 } from "regl";
 
 const canvas = document.getElementById("C") as HTMLCanvasElement;
-const gl = canvas.getContext("webgl");
+export const gl = canvas.getContext("webgl");
 // @ts-ignore
 import vert from "./shader.vert";
 // @ts-ignore

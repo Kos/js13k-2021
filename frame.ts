@@ -14,12 +14,11 @@ import regl from "./regl";
 import { shipParticles, state, step } from "./state";
 import { particles } from "./particles";
 import { currentBeatFraction } from "./audio";
-import { makeTextDrawcall } from "./text";
+import { makeOneOffText, makeTextDrawcall } from "./text";
 import { min, pow, sin, TAU, lerp, max } from "./math";
 
 let prevTime = null;
 
-// const hello = makeTextDrawcall("qwertyuiopasdfghjklzxcvbnm");
 const texts = [
   "beat", // 0
   "rocks",
@@ -281,7 +280,7 @@ regl.frame((context) => {
       });
       if (state.cooldowns[i] > 0) {
         const beats = Math.ceil((state.cooldowns[i] + 0.2) / 0.6);
-        const cd = makeTextDrawcall("" + beats)({
+        makeOneOffText("" + beats)({
           translation: [x * 2, -8.5],
           scale: 0.002,
           thickness: 0.2,
@@ -292,7 +291,7 @@ regl.frame((context) => {
   }
 
   if (state.win && state.level == 5) {
-    const cd = makeTextDrawcall(
+    makeOneOffText(
       "Congratulations!\n\nFinal score\n" +
         state.score +
         "\n\nClick to tweet and share!"
