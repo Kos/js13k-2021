@@ -126,6 +126,7 @@ leshipModel.verts.forEach((vert) => {
   [vert[2], vert[1]] = [vert[1], -vert[2]];
   vert[1] -= 0.8;
 });
+cubeModel.verts.forEach((vert) => (vert[1] -= 0.5));
 
 export type Props = {
   translation: Vec2;

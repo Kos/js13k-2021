@@ -42,7 +42,10 @@ window.addEventListener("keypress", (e) => {
     setLevel(5);
   }
   if (e.key === "L") {
-    boom([5, 9]);
+    state.powerups.push({
+      pos: [0, 0],
+      vec: [0.1, 0.1],
+    });
   }
 });
 

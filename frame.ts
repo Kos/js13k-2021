@@ -39,6 +39,7 @@ const texts = [
   "w",
   "e",
   "beat\nmiss", // 17
+  "POW", // 18
 ].map(makeTextDrawcall);
 
 regl.frame((context) => {
@@ -187,25 +188,50 @@ regl.frame((context) => {
         });
       });
     }
-    state.blasts.map(({ pos, size: aura }) => {
-      const aus = 3;
-      const auraThickness = 3 * (0.6 - aura);
+  }
+
+  state.blasts.map(({ pos, size: aura }) => {
+    const aus = 3;
+    const auraThickness = 3 * (0.6 - aura);
+    drawCircle({
+      translation: pos,
+      scale: (aura * aus) / 16,
+      thickness: auraThickness,
+      color: [1, 0, 1],
+    });
+    [0.8, 0.9, 1.1, 1.3].forEach((x) => {
       drawCircle({
         translation: pos,
-        scale: (aura * aus) / 16,
-        thickness: auraThickness,
-        color: [1, 0, 1],
-      });
-      [0.8, 0.9, 1.1, 1.3].forEach((x) => {
-        drawCircle({
-          translation: pos,
-          scale: (x * (aura * aus)) / 16,
-          thickness: auraThickness * 0.5,
-          color: [0.4 * x, 0.4 / x, 1],
-        });
+        scale: (x * (aura * aus)) / 16,
+        thickness: auraThickness * 0.5,
+        color: [0.4 * x, 0.4 / x, 1],
       });
     });
-  }
+  });
+
+  state.powerups.map(({ pos }) => {
+    const color: [number, number, number] = [0, 1, 0];
+    drawCube({
+      translation: pos,
+      rotation: state.rotation * 3,
+      rotationY: state.rotation * 0.02,
+      scale: 0.08,
+      thickness: 0.3,
+      color,
+    });
+    drawCircle({
+      translation: pos,
+      scale: 1 / 16,
+      thickness: 0.3,
+      color,
+    });
+    texts[18]({
+      translation: [pos[0], pos[1] - 0.3],
+      scale: 0.004,
+      thickness: 0.3,
+      color,
+    });
+  });
 
   particles.forEach((p) => {
     p.render();
@@ -233,7 +259,7 @@ regl.frame((context) => {
         ? [0.7, 0.7, 0.7]
         : [0.3, 0.3, 0.3];
       drawCube({
-        translation: [x * 2, -8],
+        translation: [x * 2, -7.4],
         rotation: -0.2,
         rotationY: -0.15,
         rotationZ: 0.04,

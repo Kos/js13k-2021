@@ -22,6 +22,12 @@ type TAsteroid = {
   has?: "m" | "p";
 };
 
+type TPowerup = {
+  pos: Vec2;
+  vec: Vec2;
+  collides?: boolean;
+};
+
 export type TBullet = {
   pos: Vec2;
   vec: Vec2;
@@ -80,6 +86,7 @@ type TState = {
   renderHitboxes?: boolean;
   mines: TMine[];
   signs: TSign[];
+  powerups: TPowerup[];
   win: number;
 };
 
@@ -126,6 +133,7 @@ function baseState(): TState {
     scheduledBullets: [],
     mines: [],
     signs: [],
+    powerups: [],
     win: 0,
   };
 }
@@ -209,9 +217,7 @@ function step(dt) {
 
   state.ship.collides = false;
   [...state.asteroids, ...state.mines].forEach((a) => {
-    a.pos[0] += a.vec[0] * dt;
-    a.pos[1] += a.vec[1] * dt;
-    wraparound(a.pos);
+    move(a, dt);
     // @ts-ignore
     if (a.rotation !== undefined) a.rotation += dt;
     // @ts-ignore
@@ -228,6 +234,16 @@ function step(dt) {
     state.blasts.forEach((b) => {
       collideAura(a, b, b.size * 3);
     });
+  });
+  state.powerups = state.powerups.flatMap((p) => {
+    move(p, dt);
+    collide(state.ship, p, 1);
+    if (p.collides) {
+      state.ship.collides = false; //:)
+      // TODO powerup action
+      return [];
+    }
+    return [p];
   });
 
   state.bullets = state.bullets.flatMap((b) => {
@@ -253,9 +269,7 @@ function step(dt) {
     }
   });
   state.enemyBullets = state.enemyBullets.flatMap((b) => {
-    b.pos[0] += b.vec[0] * dt;
-    b.pos[1] += b.vec[1] * dt;
-    wraparound(b.pos);
+    move(b, dt);
     b.life -= dt;
     if (b.life > 0 && !b.collides) {
       return [b];
@@ -370,9 +384,7 @@ function updateShip(s: TShip, dt: number) {
   s.vec[1] *= pow(0.5, dt * 2);
   s.thrust *= pow(0.5, dt * 3);
 
-  s.pos[0] += s.vec[0] * dt;
-  s.pos[1] += s.vec[1] * dt;
-  wraparound(s.pos);
+  move(s, dt);
 
   if (!shipParticles) shipParticles = makeExhaust();
   shipParticles.pos = [s.pos[0] - si * 0.6, s.pos[1] - co * 0.6];
