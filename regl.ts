@@ -6,28 +6,47 @@ import type { Vec2, Vec3, Vec4 } from "regl";
 
 const canvas = document.getElementById("C") as HTMLCanvasElement;
 export const gl = canvas.getContext("webgl");
+
+// TMP
+import initRegl from "regl";
+const oldRegl = initRegl(gl);
+// END TMP
+
 // @ts-ignore
 import vert from "./shader.vert";
 // @ts-ignore
 import frag from "./shader.frag";
-export { vert, frag };
+// @ts-ignore
+import lightFrag from "./light.frag";
+export { vert, frag, lightFrag };
 
 const vs = gl.createShader(gl.VERTEX_SHADER);
 const fs = gl.createShader(gl.FRAGMENT_SHADER);
-const prog = gl.createProgram();
+const ls = gl.createShader(gl.FRAGMENT_SHADER);
+const vprog = gl.createProgram();
+const lprog = gl.createProgram();
 gl.shaderSource(vs, vert);
 gl.shaderSource(fs, frag);
+gl.shaderSource(ls, lightFrag);
 gl.compileShader(vs);
 gl.compileShader(fs);
-gl.attachShader(prog, vs);
-gl.attachShader(prog, fs);
-gl.linkProgram(prog);
-gl.useProgram(prog);
+gl.compileShader(ls);
+gl.attachShader(vprog, vs);
+gl.attachShader(vprog, fs);
+gl.attachShader(lprog, vs);
+gl.attachShader(lprog, ls);
+gl.linkProgram(vprog);
+gl.linkProgram(lprog);
 
-const positionLoc = gl.getAttribLocation(prog, "Position");
-const normalLoc = gl.getAttribLocation(prog, "Normal");
-const sideLoc = gl.getAttribLocation(prog, "Side");
-const lifeLoc = gl.getAttribLocation(prog, "Life");
+oldRegl({
+  vert: vert,
+  frag: lightFrag,
+});
+
+const positionLoc = gl.getAttribLocation(vprog, "Position");
+const normalLoc = gl.getAttribLocation(vprog, "Normal");
+const sideLoc = gl.getAttribLocation(vprog, "Side");
+const lifeLoc = gl.getAttribLocation(vprog, "Life");
 
 function bufferFromSize(n: number) {
   const b = gl.createBuffer();
@@ -151,6 +170,7 @@ function myRegl<TU, TA, TP>({
   };
 }) {
   return (props) => {
+    let prog = props.lights ? lprog : vprog;
     gl.useProgram(prog);
     gl.enableVertexAttribArray(positionLoc);
     gl.bindBuffer(gl.ARRAY_BUFFER, attributes.Position.buf);
@@ -205,6 +225,13 @@ function myRegl<TU, TA, TP>({
       gl.getUniformLocation(prog, "LifeMax"),
       uniforms.LifeMax(0, props)
     );
+    if (props.lights) {
+      gl.uniform2fv(
+        gl.getUniformLocation(prog, "Lights"),
+        new Float32Array(props.lights.flat())
+      );
+    }
+
     gl.disable(gl.DEPTH_TEST);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elements.buffer);
     gl.drawElements(

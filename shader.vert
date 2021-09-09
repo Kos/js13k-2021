@@ -16,6 +16,8 @@ uniform vec3 Color;
 varying float VBar;
 varying vec3 VColor;
 varying float VLife;
+varying float VBar2;
+varying vec2 VPos;
 
 vec2 rotate(vec2 v, float a) {
 	float s = sin(a);
@@ -97,4 +99,5 @@ void main() {
     VBar = Side;
     VColor = Color;
     VLife = Life;
+    VPos=pos2d;
 }

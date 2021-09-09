@@ -58,6 +58,13 @@ regl.frame((context) => {
     color: [0, 0, 0, 1],
   });
 
+  drawLine({
+    translation: [0, -9],
+    thickness: 100,
+    scale: 1.2,
+    lights: [state.ship.pos],
+  });
+
   state.asteroids.forEach((a) => {
     [drawAsteroid, drawAsteroid2, drawAsteroid3][a.generation]({
       translation: a.pos,

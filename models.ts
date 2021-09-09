@@ -136,6 +136,7 @@ export type Props = {
   thickness?: number;
   scale?: number;
   color?: Vec3;
+  lights?: any;
 };
 
 export function makeMeshDrawCall(
