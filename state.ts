@@ -101,8 +101,7 @@ export function newAsteroid(args = {}) {
   const t = random() * 3.14 * 2;
   state.asteroids.push({
     pos: [cos(t) * 16, sin(t) * 9],
-    // vec: [cos(x) * 4, sin(x) * 4],
-    vec: [0, 0],
+    vec: [cos(x) * 4, sin(x) * 4],
     rotation: 0,
     rZ: random(),
     color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
