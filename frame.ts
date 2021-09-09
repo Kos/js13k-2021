@@ -245,7 +245,8 @@ regl.frame((context) => {
         color,
       });
       if (state.cooldowns[i] > 0) {
-        makeTextDrawcall(state.cooldowns[i].toFixed(1))({
+        const beats = Math.ceil((state.cooldowns[i] + 0.2) / 0.6);
+        const cd = makeTextDrawcall("" + beats)({
           translation: [x * 2, -8.5],
           scale: 0.002,
           thickness: 0.2,

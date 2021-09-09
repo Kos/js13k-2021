@@ -197,6 +197,7 @@ window.onbeforeunload = () => {
 // Step
 
 function step(dt) {
+  if (dt > 1) return;
   state.rotation += dt;
   state.signs = state.signs.flatMap((x) => {
     x.life -= dt;
@@ -413,23 +414,24 @@ function updateShip(s: TShip, dt: number) {
   });
 
   state.cooldowns = state.cooldowns.map((x) => max(0, x - dt));
+  const adj = currentBeatFraction() * 0.6 + 0.2;
   if (!state.ship.hitTimer) {
     if (input.skill1 && state.cooldowns[0] === 0) {
-      state.cooldowns[0] = 0.6 * 4 - 0.2;
+      state.cooldowns[0] = 0.6 * 4 - adj;
       if (checkBeat()) {
         playQ();
         state.scheduledBullets.push(0.15, 0.3, 0.45, 0.6, 0.75);
       }
     }
     if (input.skill2 && state.cooldowns[1] === 0) {
-      state.cooldowns[1] = 0.6 * 8 - 0.2;
+      state.cooldowns[1] = 0.6 * 8 - adj;
       if (checkBeat()) {
         playW();
         state.ship.aura = 0.1;
       }
     }
     if (input.skill3 && state.cooldowns[2] === 0) {
-      state.cooldowns[2] = 0.6 * 12 - 0.2;
+      state.cooldowns[2] = 0.6 * 12 - adj;
       if (checkBeat()) {
         playE();
         fireMortars(s);
@@ -510,7 +512,7 @@ function checkWin() {
   }
 }
 
-function boom(p: Vec2) {
+export function boom(p: Vec2) {
   setTimeout(() => {
     if (particles.length < 20) particles.push(...makeExplosion(p));
     playBoom();
