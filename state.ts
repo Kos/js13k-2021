@@ -89,6 +89,7 @@ type TState = {
   signs: TSign[];
   powerups: TPowerup[];
   win: number;
+  score: number;
 };
 
 type TShip = TState["ship"];
@@ -139,6 +140,7 @@ function baseState(): TState {
     signs: [],
     powerups: [],
     win: 0,
+    score: 123893,
   };
 }
 export function titleScreen() {
@@ -607,6 +609,15 @@ window.addEventListener("keyup", (e) => {
   }
   if (e.key === "Escape") {
     titleScreen();
+  }
+});
+
+window.addEventListener("click", (e) => {
+  if (state.win && state.level == 5) {
+    const text = `I just beat all the rocks and scored ${state.score} in #BeatRocks! #js13k`;
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
+    );
   }
 });
 

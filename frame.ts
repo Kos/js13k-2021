@@ -290,4 +290,17 @@ regl.frame((context) => {
       }
     });
   }
+
+  if (state.win && state.level == 5) {
+    const cd = makeTextDrawcall(
+      "Congratulations!\n\nFinal score\n" +
+        state.score +
+        "\n\nClick to tweet and share!"
+    )({
+      translation: [0, 4],
+      scale: 0.008,
+      thickness: 0.2,
+      color: [1, 1, 1],
+    });
+  }
 });
