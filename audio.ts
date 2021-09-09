@@ -54,11 +54,8 @@ function trimPrefix(buffer: AudioBuffer, seconds: number) {
   );
   [0, 1].forEach((n) => {
     const data = buffer.getChannelData(n);
-
     const source = data.subarray(samplesToTrim);
     const dest = result.getChannelData(n);
-    console.log("would trim", { dest, source });
-
     dest.set(source);
   });
   return result;
@@ -74,10 +71,9 @@ function toSource(buffer: AudioBuffer, trimMs: number = 0) {
 const bpm = 100;
 const secondsPerBeat = 60 / bpm;
 
-function timeIntoNextBeat(snb: boolean = false): number {
+function timeIntoNextBeat(): number {
   let { currentTime } = ac;
-  // if (snb) currentTime += secondsPerBeat / 2;
-  const sbb = secondsPerBeat / (snb ? 2 : 1);
+  const sbb = secondsPerBeat;
 
   const beatsSoFar = 0 | (currentTime / sbb);
   const lastBeatTime = beatsSoFar * sbb;
@@ -85,29 +81,37 @@ function timeIntoNextBeat(snb: boolean = false): number {
   return timeIntoNextBeat;
 }
 
-export function currentBeatFraction(snb: boolean = false): number {
-  return timeIntoNextBeat(snb) / secondsPerBeat;
+export function currentBeatFraction(): number {
+  return timeIntoNextBeat() / secondsPerBeat;
 }
 
-export function nextBeat(snb: boolean = false): number {
-  const frac = currentBeatFraction(snb);
+export function nextBeat(): number {
+  const frac = currentBeatFraction();
   const remainingFrac = frac ? 1 - frac : 0;
   const nextBeat = ac.currentTime + remainingFrac * secondsPerBeat;
   return nextBeat;
 }
 
-function play(song: TSong, loop: boolean = false, snp: boolean = false) {
+function play(
+  song: TSong,
+  { loop, now }: { loop?: boolean; now?: boolean } = {}
+) {
   let buf = toBuffer(song);
   return () => {
     let source = toSource(buf);
+    source.loop = loop;
     if (loop) {
-      source.loop = true;
       source.start(nextBeat());
       return;
     }
-    let cbf = currentBeatFraction(snp);
+    if (now) {
+      source.start();
+      return;
+    }
+    // beat correction for the rest
+    let cbf = currentBeatFraction();
     if (cbf > 0.2) {
-      source.start(nextBeat(snp));
+      source.start(nextBeat());
     } else if (cbf > 0.08) {
       const trim = (cbf - 0.08) * 0.6;
       source = toSource(trimPrefix(buf, trim));
@@ -118,11 +122,11 @@ function play(song: TSong, loop: boolean = false, snp: boolean = false) {
   };
 }
 
-const playBGM = play(bgm, true);
+const playBGM = play(bgm, { loop: true });
 const playQ = play(trimEffect(song, 6));
 const playW = play(trimEffect(song, 7));
 const playE = play(trimEffect(song, 9));
-const playBoom = play(trimEffect(song, 10), false, true); // BTW I Broke boom
+const playBoom = play(trimEffect(song, 10), { now: true });
 
 export { playBGM, playQ, playW, playE, playBoom };
 playBGM();

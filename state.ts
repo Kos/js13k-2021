@@ -513,10 +513,8 @@ function checkWin() {
 }
 
 export function boom(p: Vec2) {
-  setTimeout(() => {
-    if (particles.length < 20) particles.push(...makeExplosion(p));
-    playBoom();
-  }, currentBeatFraction(true) * 0.6);
+  playBoom();
+  if (particles.length < 20) particles.push(...makeExplosion(p));
 }
 
 export { shipParticles };
