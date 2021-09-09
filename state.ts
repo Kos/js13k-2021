@@ -284,13 +284,9 @@ function step(dt) {
       return [];
     }
   });
-  state.enemyBullets = state.enemyBullets.flatMap((b) => {
+  state.enemyBullets.map((b) => {
     move(b, dt);
     b.life -= dt;
-    if (b.life > 0 && !b.collides) {
-      return [b];
-    }
-    return [];
   });
 
   // O(n^2) party [INSERT QUADTREE HERE]
@@ -310,6 +306,16 @@ function step(dt) {
       collide(state.ship, b, 0);
     });
   }
+
+  state.enemyBullets = state.enemyBullets.flatMap((b) => {
+    if (b.life > 0 && !b.collides) {
+      return [b];
+    }
+    if (state.ship.collides) {
+      boom(b.pos);
+    }
+    return [];
+  });
 
   state.asteroids = state.asteroids.flatMap((a) => {
     if (!a.collides) {
