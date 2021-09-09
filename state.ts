@@ -77,6 +77,7 @@ type TState = {
     colliderSize: number;
     aura: number;
     hitTimer: number;
+    powerups: 0;
   };
   auraSize: number;
   blasts: TMortarBlast[];
@@ -94,18 +95,20 @@ type TShip = TState["ship"];
 
 // mutators
 
-export function newAsteroid() {
+export function newAsteroid(args = {}) {
   const x = random() * 3.14 * 2;
   const t = random() * 3.14 * 2;
   state.asteroids.push({
     pos: [cos(t) * 16, sin(t) * 9],
-    vec: [cos(x) * 4, sin(x) * 4],
+    // vec: [cos(x) * 4, sin(x) * 4],
+    vec: [0, 0],
     rotation: 0,
     rZ: random(),
     color: [0.7 + r2(), 0.4 + r2(), 0.1 + r2()],
     colliderSize: 1.6,
     children: [4, 3],
     generation: 0,
+    ...args,
   });
 }
 
@@ -126,6 +129,7 @@ function baseState(): TState {
       colliderSize: 0.5,
       aura: 0,
       hitTimer: 0,
+      powerups: 0,
     },
     auraSize: 5,
     blasts: [],
@@ -186,8 +190,19 @@ export function setLevel(n: number = 0) {
     life: 2,
     pos: [0, 0],
   });
-  const c = [1, 2, 2, 3, 3, 3][n];
-  for (let i = 0; i < c; ++i) newAsteroid();
+  const asteroidCount = [1, 2, 2, 3, 3, 4][n];
+  for (let i = 0; i < asteroidCount; ++i) newAsteroid();
+  if (n > 0 && n <= 4)
+    Array(n + 1)
+      .fill(0)
+      .map((_, x) =>
+        newAsteroid({
+          colliderSize: 1,
+          children: [5],
+          generation: 1,
+          has: x ? undefined : "p",
+        })
+      );
 }
 
 // initial state
@@ -240,7 +255,7 @@ function step(dt) {
     collide(state.ship, p, 1);
     if (p.collides) {
       state.ship.collides = false; //:)
-      // TODO powerup action
+      applyPowerup();
       return [];
     }
     return [p];
@@ -312,6 +327,12 @@ function step(dt) {
         colliderSize: 0.5,
         life: 3,
         inv: 1,
+      });
+    }
+    if (a.has === "p") {
+      state.powerups.push({
+        pos: [...a.pos],
+        vec: [random(), random()],
       });
     }
     return Array(n)
@@ -398,13 +419,28 @@ function updateShip(s: TShip, dt: number) {
     if (delay > 0) {
       return [delay];
     } else {
-      const bullet: TBullet = {
-        life: 1,
-        pos: [s.pos[0] + si, s.pos[1] + co],
-        vec: [si * 33 + s.vec[0], co * 33 + s.vec[1]],
-        rotation: s.angle,
-      };
-      state.bullets.push(bullet);
+      if (s.powerups < 3) {
+        state.bullets.push({
+          life: 1,
+          pos: [s.pos[0] + si, s.pos[1] + co],
+          vec: [si * 33 + s.vec[0], co * 33 + s.vec[1]],
+          rotation: s.angle,
+        });
+      } else {
+        console.log("DouBLE GUNS");
+        state.bullets.push({
+          life: 1,
+          pos: [s.pos[0] + si + co * 0.2, s.pos[1] + co - si * 0.2],
+          vec: [si * 33 + s.vec[0], co * 33 + s.vec[1]],
+          rotation: s.angle,
+        });
+        state.bullets.push({
+          life: 1,
+          pos: [s.pos[0] + si - co * 0.2, s.pos[1] + co + si * 0.2],
+          vec: [si * 33 + s.vec[0], co * 33 + s.vec[1]],
+          rotation: s.angle,
+        });
+      }
       return [];
     }
   });
@@ -429,28 +465,47 @@ function updateShip(s: TShip, dt: number) {
   const adj = currentBeatFraction() * 0.6 + 0.2;
   if (!state.ship.hitTimer) {
     if (input.skill1 && state.cooldowns[0] === 0) {
-      state.cooldowns[0] = 0.6 * 4 - adj;
+      state.cooldowns[0] = 0.6 * 2;
       if (checkBeat()) {
+        state.cooldowns[0] = 0.6 * 4 - adj;
         playQ();
         state.scheduledBullets.push(0.15, 0.3, 0.45, 0.6, 0.75);
       }
     }
-    if (input.skill2 && state.cooldowns[1] === 0) {
-      state.cooldowns[1] = 0.6 * 8 - adj;
+    if (input.skill2 && state.cooldowns[1] === 0 && state.ship.powerups >= 1) {
+      state.cooldowns[1] = 0.6 * 2;
       if (checkBeat()) {
+        state.cooldowns[1] = 0.6 * 8 - adj;
         playW();
         state.ship.aura = 0.1;
       }
     }
-    if (input.skill3 && state.cooldowns[2] === 0) {
-      state.cooldowns[2] = 0.6 * 12 - adj;
+    if (input.skill3 && state.cooldowns[2] === 0 && state.ship.powerups >= 2) {
+      state.cooldowns[2] = 0.6 * 2;
       if (checkBeat()) {
+        state.cooldowns[2] = 0.6 * 10 - adj;
         playE();
         fireMortars(s);
         state.scheduledMortar = 0.6 * (3 / 16) * 4;
       }
     }
   }
+}
+
+function applyPowerup() {
+  if (state.ship.powerups >= 4) return;
+  const v = (state.ship.powerups += 1);
+  // v=1: unlocks aura
+  // v=2: unlocks mortar
+  // v=3: improves gun
+  if (v === 4) state.auraSize *= 1.6;
+  state.signs.push({
+    pos: [0, 2],
+    life: 0.6 * 4,
+    size: 0.004,
+    index: 18 + v,
+    color: [0, 0.6, 0],
+  });
 }
 
 function checkBeat(t: number = 0.2): boolean {

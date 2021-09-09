@@ -40,6 +40,10 @@ const texts = [
   "e",
   "beat\nmiss", // 17
   "POW", // 18
+  "  Aura\nunlocked\n / W /", // 19
+  " Mortar\nunlocked\n / E /",
+  " Cannon\namplified",
+  "  Aura\nempowered",
 ].map(makeTextDrawcall);
 
 regl.frame((context) => {
@@ -158,7 +162,6 @@ regl.frame((context) => {
       rotationY: state.ship.thrust,
       rotationZ: state.ship.angle,
       scale: 0.05,
-      // thickness: lerp(0.4, 0.2, (Date.now() % 600) / 600),
       thickness: lerp(0.6, 0.1, cbf),
       color: [0.2, 0.2, 1],
     });
@@ -254,10 +257,13 @@ regl.frame((context) => {
   // hud
   if (!state.title) {
     [-1, 0, 1].forEach((x, i) => {
-      const hot = state.cooldowns[i] > 0 ? 0 : 1;
-      const color: [number, number, number] = hot
+      const locked = state.ship.powerups < i;
+      const hot = !locked && (state.cooldowns[i] > 0 ? 0 : 1);
+      const color: [number, number, number] = locked
+        ? [0.1, 0.1, 0.1]
+        : hot
         ? [0.7, 0.7, 0.7]
-        : [0.3, 0.3, 0.3];
+        : [0.4, 0.4, 0.4];
       drawCube({
         translation: [x * 2, -7.4],
         rotation: -0.2,
