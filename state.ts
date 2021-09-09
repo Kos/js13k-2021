@@ -245,7 +245,7 @@ function step(dt) {
     } else {
       state.blasts.push({
         pos: m.pos,
-        life: 0.6,
+        life: 0.3,
         size: 0,
       });
       return [];
@@ -408,7 +408,7 @@ function updateShip(s: TShip, dt: number) {
   }
   state.blasts = state.blasts.flatMap((b) => {
     b.life -= dt;
-    b.size += dt;
+    b.size += dt * 2;
     return b.life < 0 ? [] : [b];
   });
 
@@ -511,8 +511,10 @@ function checkWin() {
 }
 
 function boom(p: Vec2) {
-  if (particles.length < 20) particles.push(...makeExplosion(p));
-  playBoom();
+  setTimeout(() => {
+    if (particles.length < 20) particles.push(...makeExplosion(p));
+    playBoom();
+  }, currentBeatFraction(true) * 0.6);
 }
 
 export { shipParticles };

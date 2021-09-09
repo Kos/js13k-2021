@@ -254,7 +254,4 @@ regl.frame((context) => {
       }
     });
   }
-
-  if (!state.title) {
-  }
 });

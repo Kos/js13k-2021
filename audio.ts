@@ -74,9 +74,10 @@ function toSource(buffer: AudioBuffer, trimMs: number = 0) {
 const bpm = 100;
 const secondsPerBeat = 60 / bpm;
 
-function timeIntoNextBeat(): number {
-  const { currentTime } = ac;
-  const sbb = secondsPerBeat;
+function timeIntoNextBeat(snb: boolean = false): number {
+  let { currentTime } = ac;
+  // if (snb) currentTime += secondsPerBeat / 2;
+  const sbb = secondsPerBeat / (snb ? 2 : 1);
 
   const beatsSoFar = 0 | (currentTime / sbb);
   const lastBeatTime = beatsSoFar * sbb;
@@ -84,18 +85,18 @@ function timeIntoNextBeat(): number {
   return timeIntoNextBeat;
 }
 
-export function currentBeatFraction(): number {
-  return timeIntoNextBeat() / secondsPerBeat;
+export function currentBeatFraction(snb: boolean = false): number {
+  return timeIntoNextBeat(snb) / secondsPerBeat;
 }
 
-export function nextBeat(): number {
-  const frac = currentBeatFraction();
+export function nextBeat(snb: boolean = false): number {
+  const frac = currentBeatFraction(snb);
   const remainingFrac = frac ? 1 - frac : 0;
   const nextBeat = ac.currentTime + remainingFrac * secondsPerBeat;
   return nextBeat;
 }
 
-function play(song: TSong, loop: boolean = false) {
+function play(song: TSong, loop: boolean = false, snp: boolean = false) {
   let buf = toBuffer(song);
   return () => {
     let source = toSource(buf);
@@ -104,11 +105,11 @@ function play(song: TSong, loop: boolean = false) {
       source.start(nextBeat());
       return;
     }
-    const cbf = currentBeatFraction();
+    let cbf = currentBeatFraction(snp);
     if (cbf > 0.2) {
-      source.start(nextBeat());
-    } else if (cbf > 0.1) {
-      const trim = (cbf - 0.1) * 0.6;
+      source.start(nextBeat(snp));
+    } else if (cbf > 0.08) {
+      const trim = (cbf - 0.08) * 0.6;
       source = toSource(trimPrefix(buf, trim));
       source.start();
     } else {
@@ -121,7 +122,7 @@ const playBGM = play(bgm, true);
 const playQ = play(trimEffect(song, 6));
 const playW = play(trimEffect(song, 7));
 const playE = play(trimEffect(song, 9));
-const playBoom = play(trimEffect(song, 10));
+const playBoom = play(trimEffect(song, 10), false, true); // BTW I Broke boom
 
 export { playBGM, playQ, playW, playE, playBoom };
 playBGM();
