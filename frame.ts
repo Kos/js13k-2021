@@ -42,6 +42,7 @@ const texts = [
 ].map(makeTextDrawcall);
 
 regl.frame((context) => {
+  const cbf = currentBeatFraction();
   const dt = context.time - (prevTime || context.time);
   prevTime = context.time;
 
@@ -122,19 +123,19 @@ regl.frame((context) => {
         ? 1
         : pow(2, -10 * x) * sin((x * 10 - 0.75) * c4) + 1;
     }
-    const rotationY = (easeOutElastic(currentBeatFraction()) - 1) * 0.1;
+    const rotationY = (easeOutElastic(cbf) - 1) * 0.1;
     texts[0]({
       translation: [0, 4],
       scale: 0.02,
       color: [1, 1, 1],
-      thickness: lerp(0.9, 0.3, currentBeatFraction()),
+      thickness: lerp(0.9, 0.3, cbf),
       rotationY,
     });
     texts[1]({
       translation: [0, 0],
       scale: 0.02,
       color: [1, 1, 1],
-      thickness: lerp(0.9, 0.3, currentBeatFraction()),
+      thickness: lerp(0.9, 0.3, cbf),
       rotationY,
     });
     texts[2]({
@@ -157,7 +158,7 @@ regl.frame((context) => {
       rotationZ: state.ship.angle,
       scale: 0.05,
       // thickness: lerp(0.4, 0.2, (Date.now() % 600) / 600),
-      thickness: lerp(0.5, 0.1, currentBeatFraction()),
+      thickness: lerp(0.6, 0.1, cbf),
       color: [0.2, 0.2, 1],
     });
     state.renderHitboxes &&
@@ -227,8 +228,10 @@ regl.frame((context) => {
   // hud
   if (!state.title) {
     [-1, 0, 1].forEach((x, i) => {
-      const color: [number, number, number] =
-        state.cooldowns[i] > 0 ? [0.3, 0.3, 0.3] : [0.7, 0.7, 0.7];
+      const hot = state.cooldowns[i] > 0 ? 0 : 1;
+      const color: [number, number, number] = hot
+        ? [0.7, 0.7, 0.7]
+        : [0.3, 0.3, 0.3];
       drawCube({
         translation: [x * 2, -8],
         rotation: -0.2,
@@ -240,7 +243,7 @@ regl.frame((context) => {
       });
       texts[15 + x]({
         translation: [x * 2, -7.7],
-        scale: 0.005,
+        scale: lerp(0.005, 0.0055, pow(1 - cbf, 2) * hot),
         thickness: 0.2,
         color,
       });
