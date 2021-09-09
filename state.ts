@@ -416,21 +416,21 @@ function updateShip(s: TShip, dt: number) {
   if (!state.ship.hitTimer) {
     if (input.skill1 && state.cooldowns[0] === 0) {
       state.cooldowns[0] = 0.6 * 4 - 0.2;
-      if (checkBeat(0.5)) {
+      if (checkBeat()) {
         playQ();
         state.scheduledBullets.push(0.15, 0.3, 0.45, 0.6, 0.75);
       }
     }
     if (input.skill2 && state.cooldowns[1] === 0) {
       state.cooldowns[1] = 0.6 * 8 - 0.2;
-      if (checkBeat(0.7)) {
+      if (checkBeat()) {
         playW();
         state.ship.aura = 0.1;
       }
     }
     if (input.skill3 && state.cooldowns[2] === 0) {
       state.cooldowns[2] = 0.6 * 12 - 0.2;
-      if (checkBeat(0.7)) {
+      if (checkBeat()) {
         playE();
         fireMortars(s);
         state.scheduledMortar = 0.6 * (3 / 16) * 4;
@@ -439,9 +439,9 @@ function updateShip(s: TShip, dt: number) {
   }
 }
 
-function checkBeat(t: number): boolean {
+function checkBeat(t: number = 0.2): boolean {
   const f = currentBeatFraction();
-  if (f > t || f < 0.05) {
+  if (f > 0.75 || f < 0.2) {
     console.debug("checkBeat", f, "true");
     return true;
   }

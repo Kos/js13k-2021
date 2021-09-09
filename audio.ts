@@ -44,7 +44,27 @@ function toBuffer(song: TSong): AudioBuffer {
   return p.createAudioBuffer(ac);
 }
 
-function toSource(buffer: AudioBuffer) {
+function trimPrefix(buffer: AudioBuffer, seconds: number) {
+  const samplesToTrim = 0 | (seconds * buffer.sampleRate);
+  console.log("woudl trim", { samplesToTrim, seconds, secondsPerBeat });
+  const result = ac.createBuffer(
+    2,
+    buffer.length - samplesToTrim,
+    buffer.sampleRate
+  );
+  [0, 1].forEach((n) => {
+    const data = buffer.getChannelData(n);
+
+    const source = data.subarray(samplesToTrim);
+    const dest = result.getChannelData(n);
+    console.log("would trim", { dest, source });
+
+    dest.set(source);
+  });
+  return result;
+}
+
+function toSource(buffer: AudioBuffer, trimMs: number = 0) {
   const source = ac.createBufferSource();
   source.buffer = buffer;
   source.connect(ac.destination);
@@ -54,38 +74,54 @@ function toSource(buffer: AudioBuffer) {
 const bpm = 100;
 const secondsPerBeat = 60 / bpm;
 
-export function currentBeatFraction(divisor: number = 1): number {
+function timeIntoNextBeat(): number {
   const { currentTime } = ac;
-  const sbb = secondsPerBeat / divisor;
+  const sbb = secondsPerBeat;
 
   const beatsSoFar = 0 | (currentTime / sbb);
   const lastBeatTime = beatsSoFar * sbb;
   const timeIntoNextBeat = currentTime - lastBeatTime;
-  return timeIntoNextBeat / sbb;
+  return timeIntoNextBeat;
 }
 
-export function nextBeat(divisor: number = 1): number {
-  const frac = currentBeatFraction(divisor);
+export function currentBeatFraction(): number {
+  return timeIntoNextBeat() / secondsPerBeat;
+}
+
+export function nextBeat(): number {
+  const frac = currentBeatFraction();
   const remainingFrac = frac ? 1 - frac : 0;
   const nextBeat = ac.currentTime + remainingFrac * secondsPerBeat;
   return nextBeat;
 }
 
-function play(song: TSong, loop: boolean = false, divisor: number = 1) {
-  const buf = toBuffer(song);
+function play(song: TSong, loop: boolean = false) {
+  let buf = toBuffer(song);
   return () => {
-    const source = toSource(buf);
-    source.loop = loop;
-    // TODO Make a loophole for nextBeat if missed beat by less than 0.1s???
-    source.start(nextBeat(divisor));
+    let source = toSource(buf);
+    if (loop) {
+      source.loop = true;
+      source.start(nextBeat());
+      return;
+    }
+    const cbf = currentBeatFraction();
+    if (cbf > 0.2) {
+      source.start(nextBeat());
+    } else if (cbf > 0.1) {
+      const trim = (cbf - 0.1) * 0.6;
+      source = toSource(trimPrefix(buf, trim));
+      source.start();
+    } else {
+      source.start();
+    }
   };
 }
 
 const playBGM = play(bgm, true);
-const playQ = play(trimEffect(song, 6), false, 1);
-const playW = play(trimEffect(song, 7), false, 1);
-const playE = play(trimEffect(song, 9), false, 1);
-const playBoom = play(trimEffect(song, 10), false, 8);
+const playQ = play(trimEffect(song, 6));
+const playW = play(trimEffect(song, 7));
+const playE = play(trimEffect(song, 9));
+const playBoom = play(trimEffect(song, 10));
 
 export { playBGM, playQ, playW, playE, playBoom };
 playBGM();
