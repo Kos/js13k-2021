@@ -260,10 +260,10 @@ regl.frame((context) => {
       const locked = state.ship.powerups < i;
       const hot = !locked && (state.cooldowns[i] > 0 ? 0 : 1);
       const color: [number, number, number] = locked
-        ? [0.1, 0.1, 0.1]
+        ? [0.03, 0.03, 0.03]
         : hot
         ? [0.7, 0.7, 0.7]
-        : [0.4, 0.4, 0.4];
+        : [0.3, 0.3, 0.3];
       drawCube({
         translation: [x * 2, -7.4],
         rotation: -0.2,

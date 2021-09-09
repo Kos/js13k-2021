@@ -341,7 +341,7 @@ function step(dt) {
       .map((_) => {
         const x = random() * 6;
         let has: undefined | "m" | "p";
-        const thres = [0, 0.25, 0.25, 0.5, 0.5, 1, 1][state.level];
+        const thres = [0, 0, 0.5, 0.5, 1, 0.5][state.level];
         if (a.generation === 0 && random() < thres) has = "m";
         return {
           pos: [...a.pos],
