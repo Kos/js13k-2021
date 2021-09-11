@@ -424,6 +424,7 @@ function step(dt: number) {
 
   state.aliens = state.aliens.flatMap((a) => {
     if (a.collides && a.hits === 0) {
+      boom(a.pos);
       return [];
     }
     if (a.collides) {
@@ -433,10 +434,11 @@ function step(dt: number) {
       a.pos = [r11() * 6, r11() * 3];
       // Reset shot timer
       a.shootTimer = (4 - currentBeatFraction()) * 0.6;
+      a.shootCooldown = 0;
       boom(a.pos);
     }
     a.shootTimer -= dt;
-    if (a.shootTimer <= 0) {
+    if (a.shootTimer <= 0 && state.hp) {
       playS();
       a.shootTimer = (4 - currentBeatFraction()) * 0.6;
       a.shootCooldown = 1.2;
@@ -446,6 +448,24 @@ function step(dt: number) {
       );
     }
     a.shootCooldown = max(0, a.shootCooldown - dt);
+    if (
+      a.shootCooldown > 0.1 &&
+      a.shootCooldown <= 0.6 &&
+      !state.ship.hitTimer &&
+      state.hp
+    ) {
+      // hit moment, scan collision
+      const co = cos(a.shootAngle),
+        si = sin(a.shootAngle);
+      for (let i = 0; i < 30; ++i) {
+        const p: Vec2 = [a.pos[0] + si * i, a.pos[1] + co * i];
+        collide(state.ship, { pos: p }, 0);
+        if (state.ship.collides) {
+          boom(state.ship.pos);
+          break;
+        }
+      }
+    }
     if (a.shootTimer) return [a];
   });
 
