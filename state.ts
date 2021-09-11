@@ -524,38 +524,38 @@ function updateShip(s: TShip, dt: number) {
   shipParticles.rate = state.hp && input.thrust ? 0.02 : 100;
   shipParticles.update(dt);
 
-  if (!state.hp) return;
-
-  state.scheduledBullets = state.scheduledBullets.flatMap((delay) => {
-    delay -= dt;
-    if (delay > 0) {
-      return [delay];
-    } else {
-      if (s.powerups < 3) {
-        state.bullets.push({
-          life: 1,
-          pos: [s.pos[0] + si, s.pos[1] + co],
-          vec: [si * 33 + s.vec[0], co * 33 + s.vec[1]],
-          rotation: s.angle,
-        });
+  if (state.hp)
+    state.scheduledBullets = state.scheduledBullets.flatMap((delay) => {
+      delay -= dt;
+      if (delay > 0) {
+        return [delay];
       } else {
-        state.bullets.push({
-          life: 1,
-          pos: [s.pos[0] + si + co * 0.2, s.pos[1] + co - si * 0.2],
-          vec: [si * 33 + s.vec[0], co * 33 + s.vec[1]],
-          rotation: s.angle,
-        });
-        state.bullets.push({
-          life: 1,
-          pos: [s.pos[0] + si - co * 0.2, s.pos[1] + co + si * 0.2],
-          vec: [si * 33 + s.vec[0], co * 33 + s.vec[1]],
-          rotation: s.angle,
-        });
+        if (s.powerups < 3) {
+          state.bullets.push({
+            life: 1,
+            pos: [s.pos[0] + si, s.pos[1] + co],
+            vec: [si * 33 + s.vec[0], co * 33 + s.vec[1]],
+            rotation: s.angle,
+          });
+        } else {
+          state.bullets.push({
+            life: 1,
+            pos: [s.pos[0] + si + co * 0.2, s.pos[1] + co - si * 0.2],
+            vec: [si * 33 + s.vec[0], co * 33 + s.vec[1]],
+            rotation: s.angle,
+          });
+          state.bullets.push({
+            life: 1,
+            pos: [s.pos[0] + si - co * 0.2, s.pos[1] + co + si * 0.2],
+            vec: [si * 33 + s.vec[0], co * 33 + s.vec[1]],
+            rotation: s.angle,
+          });
+        }
+        return [];
       }
-      return [];
-    }
-  });
-  if (state.scheduledMortar) {
+    });
+
+  if (state.hp && state.scheduledMortar) {
     state.scheduledMortar = max(0, state.scheduledMortar - dt);
     if (!state.scheduledMortar) fireMortars(s, 0.3);
   }
@@ -572,32 +572,42 @@ function updateShip(s: TShip, dt: number) {
     return b.life < 0 ? [] : [b];
   });
 
-  state.cooldowns = state.cooldowns.map((x) => max(0, x - dt));
-  const adj = currentBeatFraction() * 0.6 + 0.2;
-  if (!state.ship.hitTimer) {
-    if (input.skill1 && state.cooldowns[0] === 0) {
-      state.cooldowns[0] = 0.6 * 2;
-      if (checkBeat()) {
-        state.cooldowns[0] = 0.6 * 4 - adj;
-        playQ();
-        state.scheduledBullets.push(0.15, 0.3, 0.45, 0.6, 0.75);
+  if (state.hp) {
+    state.cooldowns = state.cooldowns.map((x) => max(0, x - dt));
+    const adj = currentBeatFraction() * 0.6 + 0.2;
+    if (!state.ship.hitTimer) {
+      if (input.skill1 && state.cooldowns[0] === 0) {
+        state.cooldowns[0] = 0.6 * 2;
+        if (checkBeat()) {
+          state.cooldowns[0] = 0.6 * 4 - adj;
+          playQ();
+          state.scheduledBullets.push(0.15, 0.3, 0.45, 0.6, 0.75);
+        }
       }
-    }
-    if (input.skill2 && state.cooldowns[1] === 0 && state.ship.powerups >= 1) {
-      state.cooldowns[1] = 0.6 * 2;
-      if (checkBeat()) {
-        state.cooldowns[1] = 0.6 * 8 - adj;
-        playW();
-        state.ship.aura = 0.1;
+      if (
+        input.skill2 &&
+        state.cooldowns[1] === 0 &&
+        state.ship.powerups >= 1
+      ) {
+        state.cooldowns[1] = 0.6 * 2;
+        if (checkBeat()) {
+          state.cooldowns[1] = 0.6 * 8 - adj;
+          playW();
+          state.ship.aura = 0.1;
+        }
       }
-    }
-    if (input.skill3 && state.cooldowns[2] === 0 && state.ship.powerups >= 2) {
-      state.cooldowns[2] = 0.6 * 2;
-      if (checkBeat()) {
-        state.cooldowns[2] = 0.6 * 10 - adj;
-        playE();
-        fireMortars(s);
-        state.scheduledMortar = 0.6 * (3 / 16) * 4;
+      if (
+        input.skill3 &&
+        state.cooldowns[2] === 0 &&
+        state.ship.powerups >= 2
+      ) {
+        state.cooldowns[2] = 0.6 * 2;
+        if (checkBeat()) {
+          state.cooldowns[2] = 0.6 * 10 - adj;
+          playE();
+          fireMortars(s);
+          state.scheduledMortar = 0.6 * (3 / 16) * 4;
+        }
       }
     }
   }
