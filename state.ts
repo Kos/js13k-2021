@@ -629,7 +629,7 @@ function applyPowerup() {
 }
 
 function score(n = 10) {
-  state.score += n + state.combo++;
+  if (state.hp) state.score += n + state.combo++;
 }
 
 function checkBeat(t: number = 0.2): boolean {
