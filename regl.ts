@@ -8,8 +8,8 @@ const canvas = document.getElementById("C") as HTMLCanvasElement;
 export const gl = canvas.getContext("webgl");
 
 // TMP
-import initRegl from "regl";
-const oldRegl = initRegl(gl);
+// import initRegl from "regl";
+// const oldRegl = initRegl(gl);
 // END TMP
 
 // @ts-ignore
@@ -37,11 +37,6 @@ gl.attachShader(lprog, vs);
 gl.attachShader(lprog, ls);
 gl.linkProgram(vprog);
 gl.linkProgram(lprog);
-
-oldRegl({
-  vert: vert,
-  frag: lightFrag,
-});
 
 const positionLoc = gl.getAttribLocation(vprog, "Position");
 const normalLoc = gl.getAttribLocation(vprog, "Normal");

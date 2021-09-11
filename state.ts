@@ -1,7 +1,7 @@
 import { Vec2, Vec3 } from "regl";
 import { currentBeatFraction, playBoom, playE, playQ, playW } from "./audio";
 import input from "./input";
-import { cos, max, pow, r2, random, sign, sin, sq, TAU } from "./math";
+import { cos, max, pow, r11, r2, random, sign, sin, sq, TAU } from "./math";
 import {
   makeExhaust,
   makeExplosion,
@@ -90,6 +90,8 @@ type TState = {
   powerups: TPowerup[];
   win: number;
   score: number;
+  combo: number;
+  hp: number;
 };
 
 type TShip = TState["ship"];
@@ -139,7 +141,9 @@ function baseState(): TState {
     signs: [],
     powerups: [],
     win: 0,
-    score: 123893,
+    score: 0,
+    combo: 0,
+    hp: 9,
   };
 }
 export function titleScreen() {
@@ -220,7 +224,7 @@ window.onbeforeunload = () => {
 
 // Step
 
-function step(dt) {
+function step(dt: number) {
   if (dt > 1) return;
   state.rotation += dt;
   state.signs = state.signs.flatMap((x) => {
@@ -321,6 +325,7 @@ function step(dt) {
     if (!a.collides) {
       return [a];
     }
+    score();
     boom(a.pos);
     const children = [...a.children];
     if (!children.length) {
@@ -365,6 +370,7 @@ function step(dt) {
 
   state.mines = state.mines.flatMap((m) => {
     if (m.collides && m.inv < 0) {
+      score();
       boom(m.pos);
       return [];
     }
@@ -396,30 +402,45 @@ function updateShip(s: TShip, dt: number) {
   const sens = 4;
   const accel = 48;
   s.angle += (input.right - input.left) * sens * dt;
-  if (s.collides) {
-    s.hitTimer = 1.2;
-  } else {
-    s.hitTimer = max(0, s.hitTimer - dt);
+  if (state.hp > 0) {
+    if (s.collides) {
+      state.combo = 0;
+      if (--state.hp == 0) {
+        for (let i = 0; i < 5; ++i) {
+          setTimeout(() => boom([s.pos[0] + r11(), s.pos[1] + r11()]), i * 300);
+        }
+        return;
+      }
+      s.hitTimer = 1.2;
+    } else {
+      s.hitTimer = max(0, s.hitTimer - dt);
+    }
   }
+
   const si = sin(s.angle),
     co = cos(s.angle);
-  if (input.thrust) {
-    s.vec[0] += accel * dt * si;
-    s.vec[1] += accel * dt * co;
-  }
-  s.thrust += (input.right - input.left) * dt * 4;
-  s.vec[0] *= pow(0.5, dt * 2);
-  s.vec[1] *= pow(0.5, dt * 2);
-  s.thrust *= pow(0.5, dt * 3);
 
-  move(s, dt);
+  if (state.hp > 0) {
+    if (input.thrust) {
+      s.vec[0] += accel * dt * si;
+      s.vec[1] += accel * dt * co;
+    }
+    s.thrust += (input.right - input.left) * dt * 4;
+    s.vec[0] *= pow(0.5, dt * 2);
+    s.vec[1] *= pow(0.5, dt * 2);
+    s.thrust *= pow(0.5, dt * 3);
+
+    move(s, dt);
+  }
 
   if (!shipParticles) shipParticles = makeExhaust();
   shipParticles.pos = [s.pos[0] - si * 0.6, s.pos[1] - co * 0.6];
   shipParticles.vec = [s.vec[0] - si * 10, s.vec[1] - co * 10];
   shipParticles.variance = 3;
-  shipParticles.rate = input.thrust ? 0.02 : 100;
+  shipParticles.rate = state.hp && input.thrust ? 0.02 : 100;
   shipParticles.update(dt);
+
+  if (!state.hp) return;
 
   state.scheduledBullets = state.scheduledBullets.flatMap((delay) => {
     delay -= dt;
@@ -434,7 +455,6 @@ function updateShip(s: TShip, dt: number) {
           rotation: s.angle,
         });
       } else {
-        console.log("DouBLE GUNS");
         state.bullets.push({
           life: 1,
           pos: [s.pos[0] + si + co * 0.2, s.pos[1] + co - si * 0.2],
@@ -508,11 +528,14 @@ function applyPowerup() {
   if (v === 4) state.auraSize *= 1.6;
   state.signs.push({
     pos: [0, 2],
-    life: 0.6 * 4,
+    life: 0.6 * 8,
     size: 0.004,
     index: 18 + v,
-    color: [0, 0.6, 0],
   });
+}
+
+function score() {
+  state.score += 10 + state.combo++;
 }
 
 function checkBeat(t: number = 0.2): boolean {
@@ -531,6 +554,7 @@ function checkBeat(t: number = 0.2): boolean {
     color: [1, 0.5, 0.5],
   });
   console.debug("checkBeat", f, "false");
+  state.combo = 0;
   return false;
 }
 
@@ -579,8 +603,6 @@ function checkWin() {
     setTimeout(() => {
       if (state.level < 5) {
         setLevel(state.level + 1);
-      } else {
-        // nada
       }
     }, 2200);
   }
@@ -619,7 +641,16 @@ window.addEventListener("keyup", (e) => {
 
 window.addEventListener("click", (e) => {
   if (state.win && state.level == 5) {
-    const text = `I just beat all the rocks and scored ${state.score} in #BeatRocks! #js13k`;
+    const text = `I just beat ALL the rocks and scored ${
+      state.score * 10
+    } in Beat Rocks! #js13k @beat_rocks_game`;
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
+    );
+  } else if (!state.title && state.hp == 0) {
+    const text = `I just reached level ${state.level + 1} and scored ${
+      state.score * 10
+    } in Beat Rocks! #js13k @beat_rocks_game`;
     window.open(
       `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
     );

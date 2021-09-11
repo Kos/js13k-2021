@@ -162,15 +162,18 @@ regl.frame((context) => {
       thickness: 0.3,
     });
   } else {
-    drawLeship({
-      translation: state.ship.pos,
-      rotation: state.ship.hitTimer ? pow(state.ship.hitTimer / 1.2, 3) * 7 : 0,
-      rotationY: state.ship.thrust,
-      rotationZ: state.ship.angle,
-      scale: 0.05,
-      thickness: lerp(0.6, 0.1, cbf),
-      color: [0.2, 0.2, 1],
-    });
+    state.hp &&
+      drawLeship({
+        translation: state.ship.pos,
+        rotation: state.ship.hitTimer
+          ? pow(state.ship.hitTimer / 1.2, 3) * 7
+          : 0,
+        rotationY: state.ship.thrust,
+        rotationZ: state.ship.angle,
+        scale: 0.05,
+        thickness: lerp(0.6, 0.1, cbf),
+        color: [0.2, 0.2, 1],
+      });
     state.renderHitboxes &&
       drawCircle({
         translation: state.ship.pos,
@@ -295,12 +298,50 @@ regl.frame((context) => {
         });
       }
     });
+    drawLeship({
+      translation: [-15, -8],
+      scale: 0.03,
+      thickness: 0.2,
+      rotationY: 0.2,
+      rotationZ: 0.2,
+      color: [0.2, 0.2, 1],
+    });
+    makeOneOffText(`x${state.hp}`)({
+      translation: [-14, -8],
+      scale: 0.005,
+      thickness: 0.2,
+      color: [1, 1, 1],
+    });
+    makeOneOffText("" + state.score * 10)({
+      translation: [12, -8],
+      scale: 0.005,
+      thickness: 0.2,
+      color: [1, 1, 1],
+    });
+    makeOneOffText("streak " + state.combo)({
+      translation: [12, -8.6],
+      scale: 0.002,
+      thickness: 0.15,
+      color: [1, 1, 1],
+    });
   }
 
   if (state.win && state.level == 5) {
     makeOneOffText(
       "Congratulations!\n\nFinal score\n" +
-        state.score +
+        state.score * 10 +
+        "\n\nClick to tweet and share!"
+    )({
+      translation: [0, 4],
+      scale: 0.008,
+      thickness: 0.2,
+      color: [1, 1, 1],
+    });
+  }
+  if (!state.title && state.hp == 0) {
+    makeOneOffText(
+      "Game over!\n\nFinal score\n" +
+        state.score * 10 +
         "\n\nClick to tweet and share!"
     )({
       translation: [0, 4],
