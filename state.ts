@@ -701,6 +701,7 @@ function checkWin() {
     setTimeout(() => {
       if (state.level < 5) {
         setLevel(state.level + 1);
+        state.hp++;
       }
     }, 2200);
   }
