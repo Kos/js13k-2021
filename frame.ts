@@ -1,4 +1,4 @@
-import type { Vec3 } from "regl";
+import type { Vec2, Vec3 } from "regl";
 import {
   drawAsteroid,
   drawAsteroid2,
@@ -87,15 +87,21 @@ regl.frame((context) => {
   ];
 
   const l = state.title ? 4 : state.level;
+  const lights: Vec2[] = [
+    [-6, ((l * 69) % 16) - 8],
+    [6, ((l * 32) % 16) - 8],
+  ];
+  const lightColors = [...levelColors[l]];
+  if (!state.title) {
+    lights.push(state.ship.pos);
+    lightColors.push([0.2, 0.2, 1]);
+  }
   drawLine({
     translation: [0, -9],
     thickness: 100,
     scale: 1.2,
-    lights: [
-      [-6, ((l * 69) % 16) - 8],
-      [6, ((l * 32) % 16) - 8],
-    ],
-    lightColors: levelColors[l],
+    lights,
+    lightColors,
   });
 
   state.asteroids.forEach((a) => {
