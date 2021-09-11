@@ -69,7 +69,7 @@ regl.frame((context) => {
       [1, 0, 1],
     ],
     [
-      [1, 1, 0],
+      [0.5, 0.5, 0],
       [1, 0.5, 0],
     ],
     [
@@ -92,8 +92,8 @@ regl.frame((context) => {
     thickness: 100,
     scale: 1.2,
     lights: [
-      [-4, -4],
-      [4, 4],
+      [-6, ((l * 69) % 16) - 8],
+      [6, ((l * 32) % 16) - 8],
     ],
     lightColors: levelColors[l],
   });
