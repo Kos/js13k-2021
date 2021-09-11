@@ -603,7 +603,7 @@ function updateShip(s: TShip, dt: number) {
       ) {
         state.cooldowns[2] = 0.6 * 2;
         if (checkBeat()) {
-          state.cooldowns[2] = 0.6 * 10 - adj;
+          state.cooldowns[2] = 0.6 * 8 - adj;
           playE();
           fireMortars(s);
           state.scheduledMortar = 0.6 * (3 / 16) * 4;
