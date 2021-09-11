@@ -71,6 +71,7 @@ type TAlien = {
   pos: Vec2;
   vec: Vec2;
   hits: number;
+  inv: number; // invulnerability time left
   collides?: boolean;
   colliderSize: number;
   shootTimer: number;
@@ -161,6 +162,7 @@ function baseState(): TState {
       {
         pos: [-5, 5],
         vec: [0, 0],
+        inv: 1,
         colliderSize: 1,
         hits: 3,
         shootTimer: 0.6 * 4,
@@ -330,7 +332,7 @@ function step(dt: number) {
     });
   });
   state.bullets.forEach((b) => {
-    state.mines.forEach((a) => {
+    [...state.mines, ...state.aliens].forEach((a) => {
       collide(a, b, 0);
     });
   });
@@ -400,7 +402,7 @@ function step(dt: number) {
 
   state.mines = state.mines.flatMap((m) => {
     if (m.collides && m.inv < 0) {
-      score();
+      score(25);
       boom(m.pos);
       return [];
     }
@@ -423,11 +425,12 @@ function step(dt: number) {
   });
 
   state.aliens = state.aliens.flatMap((a) => {
-    if (a.collides && a.hits === 0) {
-      boom(a.pos);
+    if (a.collides && a.inv < 0 && a.hits === 0) {
+      booms(a.pos, 4);
       return [];
     }
-    if (a.collides) {
+    if (a.collides && a.inv < 0) {
+      score(50);
       // teleport
       boom(a.pos);
       a.hits -= 1;
@@ -436,6 +439,8 @@ function step(dt: number) {
       a.shootTimer = (4 - currentBeatFraction()) * 0.6;
       a.shootCooldown = 0;
       boom(a.pos);
+      // Small invulnerability to avoid lucky hits after teleport
+      a.inv = 0.3;
     }
     a.shootTimer -= dt;
     if (a.shootTimer <= 0 && state.hp) {
@@ -483,9 +488,7 @@ function updateShip(s: TShip, dt: number) {
     if (s.collides) {
       state.combo = 0;
       if (--state.hp == 0) {
-        for (let i = 0; i < 5; ++i) {
-          setTimeout(() => boom([s.pos[0] + r11(), s.pos[1] + r11()]), i * 300);
-        }
+        booms(s.pos, 5);
         return;
       }
       s.hitTimer = 1.2;
@@ -611,8 +614,8 @@ function applyPowerup() {
   });
 }
 
-function score() {
-  state.score += 10 + state.combo++;
+function score(n = 10) {
+  state.score += n + state.combo++;
 }
 
 function checkBeat(t: number = 0.2): boolean {
@@ -692,6 +695,12 @@ function checkWin() {
 export function boom(p: Vec2) {
   playBoom();
   if (particles.length < 20) particles.push(...makeExplosion(p));
+}
+
+function booms(p: Vec2, n) {
+  for (let i = 0; i < n; ++i) {
+    setTimeout(() => boom([p[0] + r11(), p[1] + r11()]), i * 300);
+  }
 }
 
 export { shipParticles };
