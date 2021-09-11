@@ -20,7 +20,7 @@ function getFirstIndex({ endPattern }: TSong, instrument: number) {
   // throw new Error("Failed to find first pattern");
 }
 
-function trimEffect(song: TSong, instrument: number): TSong {
+function trimEffect(song: TSong, instrument: number, m: number = 0): TSong {
   const fx = getFirstIndex(song, instrument);
   const { i, p, c } = song.songData[instrument];
   return {
@@ -28,7 +28,7 @@ function trimEffect(song: TSong, instrument: number): TSong {
     songData: [
       {
         i,
-        p: p.slice(fx, fx + 1),
+        p: [p[fx] + m],
         c,
       },
     ],
@@ -150,7 +150,12 @@ const playQ = play(trimEffect(song, 6));
 const playW = play(trimEffect(song, 7));
 const playE = play(trimEffect(song, 9));
 const playS = play(trimEffect2(song, 11));
-const playBoom = play(trimEffect(song, 10), { now: true });
+const playBoom1 = play(trimEffect(song, 10), { now: true });
+const playBoom2 = play(trimEffect(song, 10, 1), { now: true });
+
+function playBoom() {
+  (Math.random() < 0.5 ? playBoom1 : playBoom2)();
+}
 
 export { playBGM, playQ, playW, playE, playS, playBoom };
 playBGM();
