@@ -143,6 +143,31 @@ regl.frame((context) => {
       color: [0.3, 0, 0],
     });
   });
+  state.aliens.forEach((e) => {
+    drawCube({
+      translation: e.pos,
+      rotation: -state.rotation,
+      rotationY: -state.rotation * 2,
+
+      scale: 0.1,
+      thickness: 0.2,
+      color: [1, 1, 1],
+    });
+    drawCube({
+      translation: e.pos,
+      rotation: -state.rotation * 2,
+      rotationY: -state.rotation,
+      scale: 0.1,
+      thickness: 0.2,
+      color: [1, 1, 1],
+    });
+    (currentBeatFraction() > 0.2 ? drawEye : drawEye2)({
+      translation: e.pos,
+      scale: 0.01,
+      thickness: 0.2,
+      color: [1, 1, 1],
+    });
+  });
 
   [...state.bullets, ...state.mortars].forEach((b) => {
     drawLine({
