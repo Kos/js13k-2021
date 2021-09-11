@@ -22,7 +22,7 @@ let prevTime = null;
 const texts = [
   "beat", // 0
   "rocks",
-  "tap or press Q to start",
+  "press Q to start",
   "mind the rhythm",
   "level 1/6\nwarm up the engines", // 4
   "level 2/6\naura sense",

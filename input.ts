@@ -33,35 +33,36 @@ window.addEventListener("keydown", ({ code }) => {
 window.addEventListener("keyup", ({ code }) => {
   input[keymap[code]] = 0;
 });
-window.addEventListener("touchstart", (e) => {
-  e.preventDefault();
-  input.skill1 = 1;
-});
-window.addEventListener("touchmove", (e) => {
-  e.preventDefault();
-  input.skill1 = 0;
 
-  for (let i = 0; i < e.touches.length; ++i) {
-    const t = e.touches[i];
-    const lq = window.innerWidth / 4,
-      rq = window.innerWidth - lq,
-      h = 1 - t.clientY / window.innerHeight;
+// window.addEventListener("touchstart", (e) => {
+//   e.preventDefault();
+//   input.skill1 = 1;
+// });
+// window.addEventListener("touchmove", (e) => {
+//   e.preventDefault();
+//   input.skill1 = 0;
 
-    if (t.clientX < lq) {
-      // left
-      input.left = 1 - h;
-      input.right = 0;
-      input.thrust = h;
-    }
-    if (t.clientX > rq) {
-      input.right = 1 - h;
-      input.left = 0;
-      input.thrust = h;
-    }
-  }
-});
-window.addEventListener("touchend", (e) => {
-  input.left = input.right = input.thrust = input.skill1 = 0;
-});
+//   for (let i = 0; i < e.touches.length; ++i) {
+//     const t = e.touches[i];
+//     const lq = window.innerWidth / 4,
+//       rq = window.innerWidth - lq,
+//       h = 1 - t.clientY / window.innerHeight;
+
+//     if (t.clientX < lq) {
+//       // left
+//       input.left = 1 - h;
+//       input.right = 0;
+//       input.thrust = h;
+//     }
+//     if (t.clientX > rq) {
+//       input.right = 1 - h;
+//       input.left = 0;
+//       input.thrust = h;
+//     }
+//   }
+// });
+// window.addEventListener("touchend", (e) => {
+//   input.left = input.right = input.thrust = input.skill1 = 0;
+// });
 
 export default input;
