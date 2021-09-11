@@ -1,3 +1,4 @@
+import type { Vec3 } from "regl";
 import {
   drawAsteroid,
   drawAsteroid2,
@@ -58,11 +59,43 @@ regl.frame((context) => {
     color: [0, 0, 0, 1],
   });
 
+  const levelColors: [Vec3, Vec3][] = [
+    [
+      [0, 0, 1],
+      [0, 1, 0],
+    ],
+    [
+      [0, 0, 1],
+      [1, 0, 1],
+    ],
+    [
+      [1, 1, 0],
+      [1, 0.5, 0],
+    ],
+    [
+      [0.2, 0.2, 1],
+      [1, 0.2, 0],
+    ],
+    [
+      [1, 0.3, 0],
+      [0.5, 0, 0],
+    ],
+    [
+      [1, 0, 1],
+      [0, 1, 0],
+    ],
+  ];
+
+  const l = state.title ? 4 : state.level;
   drawLine({
     translation: [0, -9],
     thickness: 100,
     scale: 1.2,
-    lights: [state.ship.pos],
+    lights: [
+      [-4, -4],
+      [4, 4],
+    ],
+    lightColors: levelColors[l],
   });
 
   state.asteroids.forEach((a) => {
@@ -330,7 +363,7 @@ regl.frame((context) => {
     makeOneOffText(
       "Congratulations!\n\nFinal score\n" +
         state.score * 10 +
-        "\n\nClick to tweet and share!"
+        "\n\nDouble click to tweet and share"
     )({
       translation: [0, 4],
       scale: 0.008,
@@ -342,7 +375,7 @@ regl.frame((context) => {
     makeOneOffText(
       "Game over!\n\nFinal score\n" +
         state.score * 10 +
-        "\n\nClick to tweet and share!"
+        "\n\nDouble click to tweet and share"
     )({
       translation: [0, 4],
       scale: 0.008,

@@ -639,7 +639,7 @@ window.addEventListener("keyup", (e) => {
   }
 });
 
-window.addEventListener("click", (e) => {
+window.addEventListener("dblclick", (e) => {
   if (state.win && state.level == 5) {
     const text = `I just beat ALL the rocks and scored ${
       state.score * 10

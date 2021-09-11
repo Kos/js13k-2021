@@ -38,6 +38,12 @@ gl.attachShader(lprog, ls);
 gl.linkProgram(vprog);
 gl.linkProgram(lprog);
 
+// TMP just validate shader
+// oldRegl({
+//   vert,
+//   frag: lightFrag,
+// });
+
 const positionLoc = gl.getAttribLocation(vprog, "Position");
 const normalLoc = gl.getAttribLocation(vprog, "Normal");
 const sideLoc = gl.getAttribLocation(vprog, "Side");
@@ -123,6 +129,10 @@ function clear({ color }: { color: Vec4 }) {
 }
 
 type TElementBuffer = ReturnType<typeof elements>;
+
+const LIGHTS = 4;
+const lightbuf = new Float32Array(2 * LIGHTS);
+const lightcolbuf = new Float32Array(3 * LIGHTS);
 
 export type Uniforms = {
   Translation: Vec2;
@@ -221,10 +231,11 @@ function myRegl<TU, TA, TP>({
       uniforms.LifeMax(0, props)
     );
     if (props.lights) {
-      gl.uniform2fv(
-        gl.getUniformLocation(prog, "Lights"),
-        new Float32Array(props.lights.flat())
-      );
+      lightbuf.set(props.lights.flat());
+      gl.uniform2fv(gl.getUniformLocation(prog, "Lights"), lightbuf);
+      lightcolbuf.fill(0);
+      lightcolbuf.set(props.lightColors.flat());
+      gl.uniform3fv(gl.getUniformLocation(prog, "LightColors"), lightcolbuf);
     }
 
     gl.disable(gl.DEPTH_TEST);
