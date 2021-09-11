@@ -26,7 +26,7 @@ type TAsteroid = {
   colliderSize: number;
   children: number[];
   generation: number;
-  has?: "m" | "p";
+  has?: "m" | "p" | "a";
 };
 
 type TPowerup = {
@@ -158,16 +158,7 @@ function baseState(): TState {
     cooldowns: [0, 0, 0],
     scheduledBullets: [],
     mines: [],
-    aliens: [
-      {
-        pos: [-5, 5],
-        vec: [0, 0],
-        inv: 1,
-        colliderSize: 1,
-        hits: 3,
-        shootTimer: 0.6 * 4,
-      },
-    ],
+    aliens: [],
     signs: [],
     powerups: [],
     win: 0,
@@ -219,6 +210,7 @@ export function setLevel(n: number = 0) {
   state.level = n;
   state.asteroids = [];
   state.mines = [];
+  state.aliens = [];
   state.win = 0;
   state.ship.pos = [0, 0];
   state.ship.vec = [0, 0];
@@ -227,17 +219,19 @@ export function setLevel(n: number = 0) {
     life: 2,
     pos: [0, 0],
   });
-  const asteroidCount = [1, 2, 2, 3, 3, 4][n];
+  const asteroidCount = [1, 2, 2, 3, 3, 3][n];
+  const extraAsteroids = [[], ["p"], ["p"], ["p", "a"], ["p"], ["a"]];
   for (let i = 0; i < asteroidCount; ++i) newAsteroid();
-  if (n > 0 && n <= 4)
+  if (n > 0)
     Array(n + 1)
       .fill(0)
-      .map((_, x) =>
+      .map((_, i) =>
         newAsteroid({
           colliderSize: 1,
           children: [5],
           generation: 1,
-          has: x ? undefined : "p",
+          has: extraAsteroids[n][i],
+          color: extraAsteroids[n][i] == "a" ? [1, 1, 1] : undefined,
         })
       );
 }
@@ -377,6 +371,16 @@ function step(dt: number) {
       state.powerups.push({
         pos: [...a.pos],
         vec: [random(), random()],
+      });
+    }
+    if (a.has === "a") {
+      state.aliens.push({
+        pos: [...a.pos],
+        vec: [random(), random()],
+        inv: 1,
+        colliderSize: 1,
+        hits: state.level < 5 ? 3 : 5,
+        shootTimer: 0.6 * 4,
       });
     }
     return Array(n)
