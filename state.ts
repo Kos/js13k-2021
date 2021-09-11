@@ -67,6 +67,17 @@ type TMine = {
   colliderSize: number;
 };
 
+type TAlien = {
+  pos: Vec2;
+  vec: Vec2;
+  hits: number;
+  collides?: boolean;
+  colliderSize: number;
+  shootTimer: number;
+  shootCooldown?: number;
+  shootAngle?: number;
+};
+
 type TState = {
   title: boolean;
   level: number;
@@ -93,7 +104,7 @@ type TState = {
   scheduledMortar?: number;
   renderHitboxes?: boolean;
   mines: TMine[];
-  aliens: TMine[];
+  aliens: TAlien[];
   signs: TSign[];
   powerups: TPowerup[];
   win: number;
@@ -150,9 +161,9 @@ function baseState(): TState {
       {
         pos: [-5, 5],
         vec: [0, 0],
-        colliderSize: 0.5,
-        life: 3,
-        inv: 3,
+        colliderSize: 1,
+        hits: 3,
+        shootTimer: 0.6 * 4,
       },
     ],
     signs: [],
@@ -255,7 +266,7 @@ function step(dt: number) {
   }
 
   state.ship.collides = false;
-  [...state.asteroids, ...state.mines].forEach((a) => {
+  [...state.asteroids, ...state.mines, ...state.aliens].forEach((a) => {
     move(a, dt);
     // @ts-ignore
     if (a.rotation !== undefined) a.rotation += dt;
@@ -409,6 +420,33 @@ function step(dt: number) {
       return [];
     }
     return [m];
+  });
+
+  state.aliens = state.aliens.flatMap((a) => {
+    if (a.collides && a.hits === 0) {
+      return [];
+    }
+    if (a.collides) {
+      // teleport
+      boom(a.pos);
+      a.hits -= 1;
+      a.pos = [r11() * 6, r11() * 3];
+      // Reset shot timer
+      a.shootTimer = (4 - currentBeatFraction()) * 0.6;
+      boom(a.pos);
+    }
+    a.shootTimer -= dt;
+    if (a.shootTimer <= 0) {
+      playS();
+      a.shootTimer = (4 - currentBeatFraction()) * 0.6;
+      a.shootCooldown = 1.2;
+      a.shootAngle = Math.atan2(
+        state.ship.pos[0] - a.pos[0],
+        state.ship.pos[1] - a.pos[1]
+      );
+    }
+    a.shootCooldown = max(0, a.shootCooldown - dt);
+    if (a.shootTimer) return [a];
   });
 
   updateShip(state.ship, dt);
@@ -612,7 +650,11 @@ function collideAura(
 }
 
 function checkWin() {
-  if (!state.win && ![...state.asteroids, ...state.mines].length) {
+  if (
+    !state.win &&
+    state.hp && // don't advance level if died on last asteroid
+    ![...state.asteroids, ...state.mines, ...state.aliens].length
+  ) {
     state.win = 1;
     state.signs.push({
       index: 10 + (0 | (random() * 4)),

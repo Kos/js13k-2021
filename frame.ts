@@ -167,6 +167,36 @@ regl.frame((context) => {
       thickness: 0.2,
       color: [1, 1, 1],
     });
+    const sc = e.shootCooldown;
+    if (sc > 0.6) {
+      // warmup
+      drawLine({
+        translation: e.pos,
+        rotationZ: e.shootAngle,
+        scale: 2.5,
+        thickness: 0.1,
+        color: [1, 1, 1],
+      });
+    } else if (sc) {
+      //actual shoot
+
+      // shadow, widening
+      drawLine({
+        translation: e.pos,
+        rotationZ: e.shootAngle,
+        scale: 2.5,
+        thickness: (1 - sc) * 2,
+        color: [sc, sc, sc],
+      });
+      // shoot, narrowing
+      drawLine({
+        translation: e.pos,
+        rotationZ: e.shootAngle,
+        scale: 2.5,
+        thickness: sc * 2,
+        color: [sc * 2, sc * 1, sc * 2],
+      });
+    }
   });
 
   [...state.bullets, ...state.mortars].forEach((b) => {
