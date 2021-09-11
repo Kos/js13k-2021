@@ -37,6 +37,29 @@ function trimEffect(song: TSong, instrument: number): TSong {
   };
 }
 
+function trimEffect2(song: TSong, instrument: number): TSong {
+  const fx = getFirstIndex(song, instrument);
+  const { i, p, c } = song.songData[instrument];
+  const { i: i2, p: p2, c: c2 } = song.songData[instrument + 1];
+  return {
+    ...song,
+    songData: [
+      {
+        i,
+        p: p.slice(fx, fx + 1),
+        c,
+      },
+      {
+        i: i2,
+        p: p2.slice(fx, fx + 1),
+        c: c2,
+      },
+    ],
+    numChannels: 2,
+    endPattern: 1,
+  };
+}
+
 function toBuffer(song: TSong): AudioBuffer {
   const p = CPlayer();
   p.init(song);
@@ -126,7 +149,8 @@ const playBGM = play(bgm, { loop: true });
 const playQ = play(trimEffect(song, 6));
 const playW = play(trimEffect(song, 7));
 const playE = play(trimEffect(song, 9));
+const playS = play(trimEffect2(song, 11));
 const playBoom = play(trimEffect(song, 10), { now: true });
 
-export { playBGM, playQ, playW, playE, playBoom };
+export { playBGM, playQ, playW, playE, playS, playBoom };
 playBGM();

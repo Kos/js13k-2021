@@ -1,6 +1,5 @@
 // Hacks - remove later
 
-import { playBoom, playE, playQ } from "./audio";
 import { makeExplosion, particles } from "./particles";
 import { boom, newAsteroid, setLevel, state, titleScreen } from "./state";
 

@@ -1,5 +1,12 @@
 import { Vec2, Vec3 } from "regl";
-import { currentBeatFraction, playBoom, playE, playQ, playW } from "./audio";
+import {
+  currentBeatFraction,
+  playBoom,
+  playE,
+  playQ,
+  playS,
+  playW,
+} from "./audio";
 import input from "./input";
 import { cos, max, pow, r11, r2, random, sign, sin, sq, TAU } from "./math";
 import {
@@ -77,7 +84,7 @@ type TState = {
     colliderSize: number;
     aura: number;
     hitTimer: number;
-    powerups: 0;
+    powerups: number;
   };
   auraSize: number;
   blasts: TMortarBlast[];
@@ -86,6 +93,7 @@ type TState = {
   scheduledMortar?: number;
   renderHitboxes?: boolean;
   mines: TMine[];
+  aliens: TMine[];
   signs: TSign[];
   powerups: TPowerup[];
   win: number;
@@ -138,6 +146,15 @@ function baseState(): TState {
     cooldowns: [0, 0, 0],
     scheduledBullets: [],
     mines: [],
+    aliens: [
+      {
+        pos: [-5, 5],
+        vec: [0, 0],
+        colliderSize: 0.5,
+        life: 3,
+        inv: 3,
+      },
+    ],
     signs: [],
     powerups: [],
     win: 0,
