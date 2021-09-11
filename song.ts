@@ -41,7 +41,36 @@ export default {
         0, // FX_DELAY_TIME
       ],
       // Patterns
-      p: [, 11, 1, 2, 1, 1, 1, 2, , 11],
+      p: [
+        ,
+        ,
+        ,
+        11,
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        ,
+        ,
+        1,
+        2,
+        ,
+        ,
+        ,
+        ,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+      ],
       // Columns
       c: [
         { n: [111, , , , , , , , 111], f: [] },
@@ -91,7 +120,38 @@ export default {
         6, // FX_DELAY_TIME
       ],
       // Patterns
-      p: [, , 1, 1, 1, 1, 1, 1, 1, 1],
+      p: [
+        ,
+        ,
+        ,
+        ,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        ,
+        ,
+        ,
+        ,
+        ,
+        ,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+      ],
       // Columns
       c: [{ n: [, , , , 129, , , , , , 110], f: [] }],
     },
@@ -129,9 +189,45 @@ export default {
         4, // FX_DELAY_TIME
       ],
       // Patterns
-      p: [, , 1, 1, 1, 1, 1, 1, 1, 1],
+      p: [
+        ,
+        ,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        ,
+        ,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+      ],
       // Columns
-      c: [{ n: [, , , , 141, , , 141, 157, , , , 127, , 141], f: [] }],
+      c: [
+        { n: [, , , , 141, , , 141, 157, , , , 127, , 141], f: [] },
+        { n: [, , 127, , 141, 123, , , , , 127, , 127, , 141, 125], f: [] },
+      ],
     },
     {
       // Instrument 3
@@ -167,7 +263,7 @@ export default {
         6, // FX_DELAY_TIME
       ],
       // Patterns
-      p: [2, 3, 2, 3, , , 2, 3],
+      p: [2, 3, 2, 3, 2, 3, , , 2, 3, , , , , 2, 3, 2, 3, 2, 3],
       // Columns
       c: [
         { n: [123], f: [] },
@@ -255,7 +351,7 @@ export default {
         3, // OSC2_WAVEFORM
         138, // OSC2_VOL
         128, // OSC2_SEMI
-        14, // OSC2_DETUNE
+        0, // OSC2_DETUNE
         0, // OSC2_XENV
         0, // NOISE_VOL
         5, // ENV_ATTACK
@@ -279,7 +375,40 @@ export default {
         5, // FX_DELAY_TIME
       ],
       // Patterns
-      p: [, , , , 27, 27, 27, 33, 27],
+      p: [
+        ,
+        ,
+        ,
+        ,
+        ,
+        ,
+        27,
+        27,
+        27,
+        33,
+        27,
+        27,
+        27,
+        33,
+        ,
+        ,
+        15,
+        15,
+        15,
+        28,
+        15,
+        15,
+        15,
+        28,
+        15,
+        15,
+        15,
+        28,
+        15,
+        15,
+        15,
+        30,
+      ],
       // Columns
       c: [
         { n: [], f: [] },
@@ -296,7 +425,7 @@ export default {
         { n: [], f: [] },
         { n: [], f: [] },
         { n: [], f: [] },
-        { n: [], f: [] },
+        { n: [152, , 140, , , 140, , , 140, , , , 140, 147, 146, 143], f: [] },
         { n: [], f: [] },
         { n: [], f: [] },
         { n: [], f: [] },
@@ -312,9 +441,9 @@ export default {
           n: [, 152, , 140, 143, , , 145, , 152, , 147, 155, , 151, 148],
           f: [8],
         },
+        { n: [152, , 140, , , 140, , , 140, , , , 147, 146, 143, 140], f: [] },
         { n: [], f: [] },
-        { n: [], f: [] },
-        { n: [], f: [] },
+        { n: [152, , 140, , , 140, , , 140], f: [] },
         { n: [], f: [] },
         { n: [], f: [] },
         {
@@ -326,40 +455,49 @@ export default {
     {
       // Instrument 5
       i: [
-        2, // OSC1_WAVEFORM
-        100, // OSC1_VOL
-        128, // OSC1_SEMI
+        3, // OSC1_WAVEFORM
+        37, // OSC1_VOL
+        140, // OSC1_SEMI
         0, // OSC1_XENV
-        3, // OSC2_WAVEFORM
-        201, // OSC2_VOL
+        1, // OSC2_WAVEFORM
+        88, // OSC2_VOL
         128, // OSC2_SEMI
-        0, // OSC2_DETUNE
+        3, // OSC2_DETUNE
         0, // OSC2_XENV
         0, // NOISE_VOL
-        5, // ENV_ATTACK
-        6, // ENV_SUSTAIN
-        58, // ENV_RELEASE
-        0, // ENV_EXP_DECAY
+        92, // ENV_ATTACK
+        0, // ENV_SUSTAIN
+        5, // ENV_RELEASE
+        91, // ENV_EXP_DECAY
         0, // ARP_CHORD
         0, // ARP_SPEED
-        0, // LFO_WAVEFORM
-        195, // LFO_AMT
-        6, // LFO_FREQ
+        3, // LFO_WAVEFORM
+        179, // LFO_AMT
+        5, // LFO_FREQ
         1, // LFO_FX_FREQ
         2, // FX_FILTER
-        135, // FX_FREQ
-        0, // FX_RESONANCE
-        0, // FX_DIST
-        32, // FX_DRIVE
-        147, // FX_PAN_AMT
-        6, // FX_PAN_FREQ
-        121, // FX_DELAY_AMT
+        124, // FX_FREQ
+        135, // FX_RESONANCE
+        11, // FX_DIST
+        8, // FX_DRIVE
+        150, // FX_PAN_AMT
+        3, // FX_PAN_FREQ
+        157, // FX_DELAY_AMT
         6, // FX_DELAY_TIME
       ],
       // Patterns
-      p: [],
+      p: [, , , , , , , , , , , , , , , , , , , , 1, 2, 3, 4, 5, 6, 7, 8, 1],
       // Columns
-      c: [],
+      c: [
+        { n: [128], f: [13, , , , , , , , , , , , , , , , 53] },
+        { n: [131], f: [] },
+        { n: [135], f: [] },
+        { n: [139, , , , , , , , 142], f: [] },
+        { n: [140], f: [] },
+        { n: [143], f: [] },
+        { n: [139], f: [] },
+        { n: [136, , , , , , , , 135, , , , 131], f: [] },
+      ],
     },
     {
       // Instrument 6
@@ -476,7 +614,7 @@ export default {
         3, // FX_DELAY_TIME
       ],
       // Patterns
-      p: [, , , , , 1],
+      p: [, , , , , , , , , , , 1],
       // Columns
       c: [{ n: [128], f: [] }],
     },
@@ -552,7 +690,7 @@ export default {
         2, // FX_DELAY_TIME
       ],
       // Patterns
-      p: [, , , , , , , 1],
+      p: [, , , , , , , , 1],
       // Columns
       c: [
         {
@@ -595,7 +733,7 @@ export default {
         1, // FX_DELAY_TIME
       ],
       // Patterns
-      p: [, , , , 1],
+      p: [, , , , , 1, , 2],
       // Columns
       c: [
         {
@@ -633,6 +771,44 @@ export default {
             ,
             ,
             135,
+          ],
+          f: [],
+        },
+        {
+          n: [
+            123,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            127,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            130,
           ],
           f: [],
         },
@@ -760,6 +936,6 @@ export default {
   ],
   rowLen: 6615, // In sample lengths
   patternLen: 16, // Rows per pattern
-  endPattern: 9, // End pattern
+  endPattern: 31, // End pattern
   numChannels: 13, // Number of channels
 };

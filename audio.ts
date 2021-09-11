@@ -7,8 +7,8 @@ const ac = new AudioContext();
 
 const bgm: TSong = {
   ...song,
-  songData: song.songData.slice(0, 5),
-  numChannels: 5,
+  songData: song.songData.slice(0, 6),
+  numChannels: 6,
 };
 
 function getFirstIndex({ endPattern }: TSong, instrument: number) {
