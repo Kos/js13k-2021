@@ -375,7 +375,7 @@ regl.frame((context) => {
     makeOneOffText(
       "Game over!\n\nFinal score\n" +
         state.score * 10 +
-        "\n\nDouble click to tweet and share"
+        "\n\nDouble click to tweet and share\nR to start over"
     )({
       translation: [0, 4],
       scale: 0.008,

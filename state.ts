@@ -631,11 +631,17 @@ function wraparound(p: Vec2) {
 }
 
 window.addEventListener("keyup", (e) => {
-  if (e.code === "KeyQ" && state.title) {
+  if (e.code == "KeyQ" && state.title) {
     setLevel();
   }
-  if (e.key === "Escape") {
+  if (e.key == "Escape") {
     titleScreen();
+  }
+  if (e.code == "KeyR") {
+    if ((state.win && state.level == 5) || (!state.title && state.hp == 0)) {
+      titleScreen();
+      setLevel();
+    }
   }
 });
 
