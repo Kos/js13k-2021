@@ -190,6 +190,8 @@ export function setLevel(n: number = 0) {
   state.asteroids = [];
   state.mines = [];
   state.win = 0;
+  state.ship.pos = [0, 0];
+  state.ship.vec = [0, 0];
   state.signs.push({
     index: n + 4,
     life: 2,
