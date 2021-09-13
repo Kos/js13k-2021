@@ -27,7 +27,7 @@ Playtests revealed that it is confusing that when the player uses an ability, th
 
 I composed the music on a Nintendo Switch, then moved it over to [SoundBox](https://sb.bitsnbites.eu/). I'm interested in synths but I have almost zero experience with composing, it's my longest song so far!
 
-I also used SoundBox for sound effects. The sounds were done as other instruments so that I could test how everything sounds together. Since SoundBox saves the song as JSON, I was able to extract and trim the sound tracks in the game code to separate audio buffers. 
+I also used SoundBox for sound effects. The sounds were done as other instruments in the same track, so that I could test how everything sounds together. Since SoundBox saves the song as JSON, I was able to extract and trim the sound tracks in the game code to separate audio buffers. 
 
 ### Graphics
 
