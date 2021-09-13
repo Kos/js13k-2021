@@ -17,7 +17,7 @@ I think this is my third or fourth attempt at making an Asteroids game. One atte
 
 The idea was in my mind for a long time but I wasn't eager to start, until Fatfisz told me that JS13k is starting and "SPACE" is the theme. I couldn't pass over it...
 
-I wasn't originally planning to make this a rhythm game, the idea randomly came up later and it seemed to work. I was playing a lot of Tetris Effect earlier this year so I tried toying with the idea of sounds effect "contributing" to the music.
+I wasn't originally planning to make this a rhythm game, the idea randomly came up later and it seemed to work. I was playing a lot of Tetris Effect earlier this year so I tried toying with the idea of sound effects "contributing" to the music.
 
 Playtests revealed that it is confusing that when the player uses an ability, the effect triggers immediately but the sound only plays on the next beat (which can be half a second later). This led to the conclusion "why not _require_ the player to use skills on beat?". This way the game suddenly become a necrodancerlike :)
 
