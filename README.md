@@ -9,7 +9,7 @@ My submission for [JS13k 2021 compo](https://js13kgames.com/entries/2021).
 - Andrzej Mazur for relentlessly hosting the competition :)
 - Fatfisz for encouraging me to take part in the compo \o/
 - My fantastic playtesters: Sosz, Thomas Pendragon, Paweł Marczewski, Adam Jakubowski, Mateusz Krawczyk, Jan Ambroziewicz, Greg Solo
-- Freya Holmes publishing lots and lots of inspiration about rendering vector graphics
+- Freya Holmes for publishing lots and lots of inspiration about rendering vector graphics
 
 ## Idea
 
